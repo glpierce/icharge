@@ -2,6 +2,7 @@ const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 let sourceLat
 let sourceLong
+let stationArray = []
 
 document.addEventListener('DOMContentLoaded', event => {
     const form = document.querySelector('form')
@@ -35,6 +36,15 @@ function getChargePoints() {
     fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=1.5&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
-        console.log(data)
+        data.forEach(station => stationArray.push({
+            stationID: station.ID,
+            stationUID: station.UUID,
+            dataQuality: station.DataQualityLevel,
+            status: station.statusType,
+            lastStatusUpdate: station.DateLastStatusUpdate,
+            usageCost: station.UsageCost,
+            addressInfo: station.AddressInfo
+        }))
+        console.log(stationArray)
     })
 }
