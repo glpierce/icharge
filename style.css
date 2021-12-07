@@ -1,4 +1,70 @@
-#formContainer {
-    width: 20%;
+#mainTitle {
     text-align: center;
+}
+#formContainer {
+    width: 1012px;
+    position: absolute;
+    border-style: solid;
+    border-radius: 15px;
+    background-color: beige;
+    margin-top: 10px;
+}
+
+#formTitle {
+    text-align: center;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+#formContainer div{
+    float: left;
+    text-align: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 3px;
+    margin-bottom: 5px;
+}
+
+#formContainer input, label {
+    display: block;
+}
+
+#resultsContainer {
+    width: 1012px;
+    position: absolute;
+    top: 200px;
+    visibility: hidden;
+}
+
+#resultsHeader {
+    height: 30px;
+}
+
+#searchResultsLabel {
+    margin-left: 10px;
+    margin-bottom: 5px;
+    float: left;
+    text-decoration: underline;
+}
+
+#searchRadiusContainer {
+    margin-right: 10px;
+    margin-top: 10px;
+    float: right;
+}
+
+.resultDiv {
+    border-style: solid;
+    border-radius: 15px;
+    background-color: beige;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.resultTitle {
+    margin-left: 15px;
+}
+
+.resultAddress {
+    margin-left: 15px;
 }

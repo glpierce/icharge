@@ -3,11 +3,33 @@ const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 let sourceLat
 let sourceLong
 let stationArray = []
+let searchRadius = 1
 
 document.addEventListener('DOMContentLoaded', event => {
+    arragePage()
+    window.onresize = function() {arragePage()}
+    document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     const form = document.querySelector('form')
     form.addEventListener('submit', event => submitForm(event))
 })
+
+function arragePage() {
+    document.querySelector('#formContainer').style.left = `${(window.innerWidth / 2) - 506}px`
+    document.querySelector('#resultsContainer').style.left = `${(window.innerWidth / 2) - 506}px`
+}
+
+function changeSearchRadius(event) {
+    searchRadius = parseInt(event.target.value, 10)
+    stationArray.forEach(station => removeResults(station))
+    renderResults()
+}
+
+function removeResults(station) {
+   if (station.resultElement) {
+        document.getElementById("resultsContainer").removeChild(station.resultElement)
+        delete station.resultElement
+   }  
+}
 
 function submitForm(event) {
     event.preventDefault()
@@ -33,9 +55,10 @@ function getChargePoints() {
             'Content-Type': 'application/json'
         }
     }
-    fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=1.5&key=${ocaccesskey}`, getObj)
+    fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=25&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
+        console.log(data)
         data.forEach(station => stationArray.push({
             stationID: station.ID,
             stationUID: station.UUID,
@@ -43,6 +66,14 @@ function getChargePoints() {
             status: station.statusType,
             lastStatusUpdate: station.DateLastStatusUpdate,
             usageCost: station.UsageCost,
+            usageType: station.UsageType.Title,
+            connections: station.Connections,
+            operatorInfo: {
+                comments: station.OperatorInfo.Comments,
+                isPrivate: station.OperatorInfo.IsPrivateIndividual,
+                operatorName: station.OperatorInfo.Title,
+                operatorURL: station.OperatorInfo.BookingURL
+            },
             addressInfo: station.AddressInfo
         }))
         console.log(stationArray)
@@ -51,15 +82,23 @@ function getChargePoints() {
 }
 
 function renderResults() {
+    const resultsContainer = document.getElementById("resultsContainer")
+    resultsContainer.style.visibility = "visible"
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
-        const resultDiv = document.createElement("div")
-        const stationTitle = document.createElement("h3")
-        stationTitle.innerText = addressInfo.Title
-        resultDiv.appendChild(stationTitle)
-        const stationAddress = document.createElement("p")
-        stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
-        resultDiv.appendChild(stationAddress)
-        document.getElementById("resultsContainer").appendChild(resultDiv)
+        if (addressInfo.Distance <= searchRadius) {
+            const resultDiv = document.createElement("div")
+            resultDiv.className = "resultDiv"
+            const stationTitle = document.createElement("h3")
+            stationTitle.className = "resultTitle"
+            stationTitle.innerText = addressInfo.Title
+            resultDiv.appendChild(stationTitle)
+            const stationAddress = document.createElement("p")
+            stationAddress.className = "resultAddress"
+            stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
+            resultDiv.appendChild(stationAddress)
+            document.getElementById("resultsContainer").appendChild(resultDiv)
+            station.resultElement = resultDiv
+        }
     });
 }

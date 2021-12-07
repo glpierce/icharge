@@ -5,28 +5,48 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
   </head>
   <body>
+    <h2 id="mainTitle">E-charge Finder</h2>
       <div id="formContainer">
-          <form id="form">
+        <h4 id="formTitle">Search Location</h3>
+        <form id="form">
+          <div>
               <label for="street">Street Address</label>
               <input type="text" id="street">
-              <br>
+          </div>
+          <div>
               <label for="city">City</label>
               <input type="text" id="city">
-              <br>
-              <label for="state">State</label>
-              <input type="text" id="state">
-              <br>
-              <label for="zip">Zip Code</label>
-              <input type="text" id="zip">
-              <br>
-              <label for="country">Country Abbreviation</label>
-              <input type="text" id="country">
-              <br>
-              <input type="submit" class="btn btn-lg btn-default" id="submitButton" value="Submit">
-          </form>
+          </div>
+          <div>
+            <label for="state">State/Province</label>
+            <input type="text" id="state">
+          </div>
+          <div>
+            <label for="zip">Zip Code</label>
+            <input type="text" id="zip">
+          </div>
+          <div>
+            <label for="country">Country Abbreviation</label>
+            <input type="text" id="country">
+          </div>
+          <div>
+            <input type="submit" class="btn btn-lg btn-default" id="submitButton" value="Search">
+          </div>
+        </form>
       </div>
       <div id= "resultsContainer">
-        
+        <div id="resultsHeader">
+          <h4 id="searchResultsLabel">Search Results:</h3>
+          <span id="searchRadiusContainer">
+            <label for="searchRadius">Search Radius:</label>
+            <select name="searchRadius" id="searchRadius">
+              <option value="1">1mi</option>
+              <option value="5">5mi</option>
+              <option value="10">10mi</option>
+              <option value="25">25mi</option>
+            </select>
+          </span>
+        </div>
       </div>
     <script src="./src/index.js"></script>
   </body>
