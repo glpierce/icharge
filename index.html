@@ -2,6 +2,7 @@
 <html lang="en">
   <head> 
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
   </head>
   <body>
       <div id="formContainer">
@@ -21,8 +22,11 @@
               <label for="country">Country Abbreviation</label>
               <input type="text" id="country">
               <br>
-              <input type="submit" id="submitButton" value="Submit">
+              <input type="submit" class="btn btn-lg btn-default" id="submitButton" value="Submit">
           </form>
+      </div>
+      <div id= "resultsContainer">
+        
       </div>
     <script src="./src/index.js"></script>
   </body>

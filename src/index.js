@@ -46,5 +46,20 @@ function getChargePoints() {
             addressInfo: station.AddressInfo
         }))
         console.log(stationArray)
+        renderResults()
     })
+}
+
+function renderResults() {
+    stationArray.forEach(station => {
+        const addressInfo = station.addressInfo
+        const resultDiv = document.createElement("div")
+        const stationTitle = document.createElement("h3")
+        stationTitle.innerText = addressInfo.Title
+        resultDiv.appendChild(stationTitle)
+        const stationAddress = document.createElement("p")
+        stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
+        resultDiv.appendChild(stationAddress)
+        document.getElementById("resultsContainer").appendChild(resultDiv)
+    });
 }
