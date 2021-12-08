@@ -1,10 +1,18 @@
+// Access keys for PositionStack (ps) & OpenChargeMap (oc) APIs
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
+
+// Global variables for latitude and longitude of input address
 let sourceLat
 let sourceLong
+
+// Global variable for storing the results of the OC API hit
 let stationArray = []
+
+// GLobal variable for storing selected search radius in miles
 let searchRadius = 1
 
+//When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
     arragePage()
     window.onresize = function() {arragePage()}
@@ -13,17 +21,20 @@ document.addEventListener('DOMContentLoaded', event => {
     form.addEventListener('submit', event => submitForm(event))
 })
 
+// Sets two major page elements (search block & results block) centered in the window
 function arragePage() {
     document.querySelector('#formContainer').style.left = `${(window.innerWidth / 2) - 506}px`
     document.querySelector('#resultsContainer').style.left = `${(window.innerWidth / 2) - 506}px`
 }
 
+// Sets search radius variable to user selected value, removes every displayed result station, rerenders result stations within the search radius
 function changeSearchRadius(event) {
     searchRadius = parseInt(event.target.value, 10)
     stationArray.forEach(station => removeResults(station))
     renderResults()
 }
 
+// If the station is currently being displayed, removes result display from DOM and removes reference to the DOM element from the stationArray
 function removeResults(station) {
    if (station.resultElement) {
         document.getElementById("resultsContainer").removeChild(station.resultElement)
@@ -31,6 +42,7 @@ function removeResults(station) {
    }  
 }
 
+// Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
     const addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
@@ -38,6 +50,8 @@ function submitForm(event) {
     getCoordinates(addressString)
 }
 
+// Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
+// which are stored in the global sourceLat & sourceLong variables. getChargePoints is then called
 function getCoordinates(addressString) {
     fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
     .then(resp => resp.json())
@@ -48,6 +62,10 @@ function getCoordinates(addressString) {
     })
 }
 
+
+// Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
+// of e-charge stations within 25mi of the sourceLat,Long. Relevant data is then extracted from the response and stored in the global stationArray. Finally,
+// renderResults is called
 function getChargePoints() {
     const getObj = {
         method: 'GET',
@@ -76,6 +94,8 @@ function getChargePoints() {
     })
 }
 
+// Makes the results container visible, for each station in the stationArray checks if its distance from sourceLat,Long is within search radius.
+// If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
     resultsContainer.style.visibility = "visible"
@@ -84,49 +104,60 @@ function renderResults() {
         if (addressInfo.Distance <= searchRadius) {
             const resultDiv = document.createElement("div")
             resultDiv.className = "resultDiv"
-            const resultTitleDiv = document.createElement('div')
-            resultTitleDiv.className = "resultTitleDiv"
-            const stationTitle = document.createElement("h3")
-            stationTitle.className = "resultTitle"
-            stationTitle.innerText = addressInfo.Title
-            resultTitleDiv.appendChild(stationTitle)
-            const stationAddress = document.createElement("p")
-            stationAddress.className = "resultAddress"
-            stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
-            resultTitleDiv.appendChild(stationAddress)
-            resultDiv.appendChild(resultTitleDiv)
-            const connectionsInfoContainer = document.createElement('div')
-            connectionsInfoContainer.className = "connectionsInfoContainer"
-            const connectionsTitle = document.createElement('h5')
-            connectionsTitle.innerText = "Connections:"
-            connectionsTitle.className = "connectionsTitle"
-            connectionsInfoContainer.appendChild(connectionsTitle)
-            station.connections.forEach(connection => {
-                const connectionSpan = document.createElement('span')
-                connection.className = "connectionSpan"
-                const ul = document.createElement('ul')
-                ul.className = "connectionList"
-                const connectionType = document.createElement('li')
-                connectionType.innerText = `${(connection.ConnectionType.FormalName ? connection.ConnectionType.FormalName : "Unknown Type")}`
-                connectionType.style.fontWeight = "bold"
-                ul.appendChild(connectionType)
-                const chargeRate = document.createElement('li')
-                chargeRate.innerText = `Charge Rate: ${(connection.PowerKW ? `${connection.PowerKW} kW` : "Unknown")}`
-                ul.appendChild(chargeRate)
-                const current = document.createElement('li')
-                current.innerText = `Current: ${(connection.CurrentType ? connection.CurrentType.Title : 'Unknown')}`
-                ul.appendChild(current)
-                if (connection.Amps && connection.Voltage) {
-                    const ampsVolts = document.createElement('li')
-                    ampsVolts.innerText = `${connection.Amps}A ${connection.Voltage}V`
-                    ul.appendChild(ampsVolts)
-                }
-                connectionSpan.appendChild(ul)
-                connectionsInfoContainer.appendChild(connectionSpan)
-            })
-            resultDiv.appendChild(connectionsInfoContainer)
-            document.getElementById("resultsContainer").appendChild(resultDiv)
+            resultDiv.appendChild(renderTitleAddress(addressInfo))
+            resultDiv.appendChild(renderConnections(station))
+            resultsContainer.appendChild(resultDiv)
             station.resultElement = resultDiv
         }
     });
+}
+
+// Creates a div containing the station's title and address. Returns the div to renderResults to be rendered to the DOM
+function renderTitleAddress(addressInfo) {
+    const resultTitleDiv = document.createElement('div')
+    resultTitleDiv.className = "resultTitleDiv"
+    const stationTitle = document.createElement("h3")
+    stationTitle.className = "resultTitle"
+    stationTitle.innerText = addressInfo.Title
+    resultTitleDiv.appendChild(stationTitle)
+    const stationAddress = document.createElement("p")
+    stationAddress.className = "resultAddress"
+    stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
+    resultTitleDiv.appendChild(stationAddress)
+    return resultTitleDiv
+}
+
+
+// Creates a div containing the station's connection information. Returns the div to renderResults to be rendered to the DOM
+function renderConnections(station) {
+    const connectionsInfoContainer = document.createElement('div')
+    connectionsInfoContainer.className = "connectionsInfoContainer"
+    const connectionsTitle = document.createElement('h5')
+    connectionsTitle.innerText = "Connections:"
+    connectionsTitle.className = "connectionsTitle"
+    connectionsInfoContainer.appendChild(connectionsTitle)
+    station.connections.forEach(connection => {
+        const connectionSpan = document.createElement('span')
+        connection.className = "connectionSpan"
+        const ul = document.createElement('ul')
+        ul.className = "connectionList"
+        const connectionType = document.createElement('li')
+        connectionType.innerText = `${(connection.ConnectionType.FormalName ? connection.ConnectionType.FormalName : "Unknown Type")}`
+        connectionType.style.fontWeight = "bold"
+        ul.appendChild(connectionType)
+        const chargeRate = document.createElement('li')
+        chargeRate.innerText = `Charge Rate: ${(connection.PowerKW ? `${connection.PowerKW}kW` : "Unknown")}`
+        ul.appendChild(chargeRate)
+        const current = document.createElement('li')
+        current.innerText = `Current: ${(connection.CurrentType ? connection.CurrentType.Title : 'Unknown')}`
+        ul.appendChild(current)
+        if (connection.Amps && connection.Voltage) {
+            const ampsVolts = document.createElement('li')
+            ampsVolts.innerText = `${connection.Amps}A ${connection.Voltage}V`
+            ul.appendChild(ampsVolts)
+        }
+        connectionSpan.appendChild(ul)
+        connectionsInfoContainer.appendChild(connectionSpan)
+    })
+    return connectionsInfoContainer
 }
