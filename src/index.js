@@ -124,7 +124,15 @@ function renderTitleAddress(addressInfo) {
     stationAddress.className = "resultAddress"
     stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
     resultTitleDiv.appendChild(stationAddress)
+    const distance = document.createElement("p");
+    distance.className = "resultDistance";
+    distance.innerText =`${round(addressInfo.Distance, 2)} miles away`;
+    resultTitleDiv.appendChild(distance)
     return resultTitleDiv
+}
+function round(num, places){
+    const factorOfTen = Math.pow(10, places);
+    return Math.round(num * factorOfTen)/factorOfTen;
 }
 
 
