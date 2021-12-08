@@ -112,7 +112,7 @@ function renderResults() {
     });
 }
 
-// Creates a div containing the station's title and address. Returns the div to renderResults to be rendered to the DOM
+// Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
 function renderTitleAddress(addressInfo) {
     const resultTitleDiv = document.createElement('div')
     resultTitleDiv.className = "resultTitleDiv"
@@ -130,11 +130,12 @@ function renderTitleAddress(addressInfo) {
     resultTitleDiv.appendChild(distance)
     return resultTitleDiv
 }
+
+// Takes in a number to be rounded and a number of decimal places to round to. Returns the rounded number
 function round(num, places){
     const factorOfTen = Math.pow(10, places);
     return Math.round(num * factorOfTen)/factorOfTen;
 }
-
 
 // Creates a div containing the station's connection information. Returns the div to renderResults to be rendered to the DOM
 function renderConnections(station) {

@@ -65,14 +65,21 @@
 
 .resultTitle {
     margin-left: 15px;
+    margin-top: 5px;
+    margin-bottom: 3px;
+    text-decoration: underline;
 }
 
 .resultAddress {
+    font-weight: bold;
     margin-left: 15px;
+    margin-bottom: 0px;
 }
 
 .resultDistance{
+    margin-top: 0px;
     margin-left: 15px;
+    margin-bottom: 8px;
 }
 
 .connectionsInfoContainer {
