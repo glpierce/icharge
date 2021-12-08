@@ -66,14 +66,9 @@ function getChargePoints() {
             status: station.statusType,
             lastStatusUpdate: station.DateLastStatusUpdate,
             usageCost: station.UsageCost,
-            usageType: station.UsageType.Title,
+            usageType: station.UsageType,
             connections: station.Connections,
-            operatorInfo: {
-                comments: station.OperatorInfo.Comments,
-                isPrivate: station.OperatorInfo.IsPrivateIndividual,
-                operatorName: station.OperatorInfo.Title,
-                operatorURL: station.OperatorInfo.BookingURL
-            },
+            operatorInfo: station.OperatorInfo,
             addressInfo: station.AddressInfo
         }))
         console.log(stationArray)
@@ -89,14 +84,47 @@ function renderResults() {
         if (addressInfo.Distance <= searchRadius) {
             const resultDiv = document.createElement("div")
             resultDiv.className = "resultDiv"
+            const resultTitleDiv = document.createElement('div')
+            resultTitleDiv.className = "resultTitleDiv"
             const stationTitle = document.createElement("h3")
             stationTitle.className = "resultTitle"
             stationTitle.innerText = addressInfo.Title
-            resultDiv.appendChild(stationTitle)
+            resultTitleDiv.appendChild(stationTitle)
             const stationAddress = document.createElement("p")
             stationAddress.className = "resultAddress"
             stationAddress.innerText = `${addressInfo.AddressLine1}, ${addressInfo.Town}, ${addressInfo.StateOrProvince} ${addressInfo.Postcode} ${addressInfo.Country.ISOCode}`
-            resultDiv.appendChild(stationAddress)
+            resultTitleDiv.appendChild(stationAddress)
+            resultDiv.appendChild(resultTitleDiv)
+            const connectionsInfoContainer = document.createElement('div')
+            connectionsInfoContainer.className = "connectionsInfoContainer"
+            const connectionsTitle = document.createElement('h5')
+            connectionsTitle.innerText = "Connections:"
+            connectionsTitle.className = "connectionsTitle"
+            connectionsInfoContainer.appendChild(connectionsTitle)
+            station.connections.forEach(connection => {
+                const connectionSpan = document.createElement('span')
+                connection.className = "connectionSpan"
+                const ul = document.createElement('ul')
+                ul.className = "connectionList"
+                const connectionType = document.createElement('li')
+                connectionType.innerText = `${(connection.ConnectionType.FormalName ? connection.ConnectionType.FormalName : "Unknown Type")}`
+                connectionType.style.fontWeight = "bold"
+                ul.appendChild(connectionType)
+                const chargeRate = document.createElement('li')
+                chargeRate.innerText = `Charge Rate: ${(connection.PowerKW ? `${connection.PowerKW} kW` : "Unknown")}`
+                ul.appendChild(chargeRate)
+                const current = document.createElement('li')
+                current.innerText = `Current: ${(connection.CurrentType ? connection.CurrentType.Title : 'Unknown')}`
+                ul.appendChild(current)
+                if (connection.Amps && connection.Voltage) {
+                    const ampsVolts = document.createElement('li')
+                    ampsVolts.innerText = `${connection.Amps}A ${connection.Voltage}V`
+                    ul.appendChild(ampsVolts)
+                }
+                connectionSpan.appendChild(ul)
+                connectionsInfoContainer.appendChild(connectionSpan)
+            })
+            resultDiv.appendChild(connectionsInfoContainer)
             document.getElementById("resultsContainer").appendChild(resultDiv)
             station.resultElement = resultDiv
         }

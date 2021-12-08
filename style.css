@@ -59,6 +59,8 @@
     background-color: beige;
     margin-top: 5px;
     margin-bottom: 5px;
+    float: left;
+    width: 1012px;
 }
 
 .resultTitle {
@@ -67,4 +69,27 @@
 
 .resultAddress {
     margin-left: 15px;
+}
+
+
+.connectionsInfoContainer {
+    margin-top: 10px;
+}
+
+.connectionsTitle {
+    font-weight: bold;
+    text-decoration: underline;
+    margin-left: 15px;
+    margin-bottom: 5px;
+}
+
+.connectionsInfoContainer span {
+    float: left;
+    display: block;
+    margin-left: 15px;
+}
+
+.connectionList {
+    list-style-type: none;
+    padding: 0;
 }
