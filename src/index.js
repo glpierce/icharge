@@ -1,4 +1,4 @@
-// Access keys for PositionStack (ps) & OpenChargeMap (oc) APIs
+// Access keys for PositionStack (PS) & OpenChargeMap (OC) APIs
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
@@ -12,7 +12,6 @@ let stationArray = []
 // GLobal variables for storing selected search radius in miles, connection type, and current type
 let searchRadius = 1
 let connectionType = "all"
-let currentType = "all"
 
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
@@ -71,7 +70,6 @@ function getCoordinates(addressString) {
         getChargePoints()
     })
 }
-
 
 // Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
 // of e-charge stations within 25mi of the sourceLat,Long. Relevant data is then extracted from the response and stored in the global stationArray. Finally,
@@ -147,7 +145,7 @@ function renderTitleAddress(addressInfo) {
 }
 
 // Takes in a number to be rounded and a number of decimal places to round to. Returns the rounded number
-function round(num, places){
+function round(num, places) {
     const factorOfTen = Math.pow(10, places);
     return Math.round(num * factorOfTen)/factorOfTen;
 }
