@@ -9,14 +9,17 @@ let sourceLong
 // Global variable for storing the results of the OC API hit
 let stationArray = []
 
-// GLobal variable for storing selected search radius in miles
+// GLobal variables for storing selected search radius in miles, connection type, and current type
 let searchRadius = 1
+let connectionType = "all"
+let currentType = "all"
 
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
     arragePage()
     window.onresize = function() {arragePage()}
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
+    document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
     const form = document.querySelector('form')
     form.addEventListener('submit', event => submitForm(event))
 })
@@ -30,6 +33,13 @@ function arragePage() {
 // Sets search radius variable to user selected value, removes every displayed result station, rerenders result stations within the search radius
 function changeSearchRadius(event) {
     searchRadius = parseInt(event.target.value, 10)
+    stationArray.forEach(station => removeResults(station))
+    renderResults()
+}
+
+// Sets connection type variable to user selected value, removes every displayed result station, rerenders result stations with matching connection type
+function changeConnectionType(event) {
+    connectionType = event.target.value
     stationArray.forEach(station => removeResults(station))
     renderResults()
 }
@@ -94,20 +104,25 @@ function getChargePoints() {
     })
 }
 
-// Makes the results container visible, for each station in the stationArray checks if its distance from sourceLat,Long is within search radius.
+// Makes the results container visible, for each station in the stationArray checks if...
+// 1. Its distance from sourceLat,Long is within search radius.
+// 2. It has a connection type which matches the user selection.
 // If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
     resultsContainer.style.visibility = "visible"
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
+        const connectionsInfo = station.connections
         if (addressInfo.Distance <= searchRadius) {
-            const resultDiv = document.createElement("div")
-            resultDiv.className = "resultDiv"
-            resultDiv.appendChild(renderTitleAddress(addressInfo))
-            resultDiv.appendChild(renderConnections(station))
-            resultsContainer.appendChild(resultDiv)
-            station.resultElement = resultDiv
+            if (connectionType === "all" || connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType))) {
+                const resultDiv = document.createElement("div")
+                resultDiv.className = "resultDiv"
+                resultDiv.appendChild(renderTitleAddress(addressInfo))
+                resultDiv.appendChild(renderConnections(station))
+                resultsContainer.appendChild(resultDiv)
+                station.resultElement = resultDiv
+            }
         }
     });
 }
