@@ -175,7 +175,7 @@ function getChargePoints() {
 // If the station is currently being displayed, removes result display from DOM and removes reference to the DOM element from the stationArray
 function removeResults(station) {
     if (station.resultElement) {
-         document.getElementById("resultsContainer").removeChild(station.resultElement)
+         document.getElementById("resultDisplay").removeChild(station.resultElement)
          delete station.resultElement
     }
 }  
@@ -200,11 +200,14 @@ function renderResults() {
     addressP.innerText = addressString
     addressP.id = "addressP"
     document.querySelector('#addressContainer').appendChild(addressP)
+    const resultDisplay = document.querySelector("#resultDisplay")
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
         if (addressInfo.Distance <= searchRadius) {
             if (connectionType === "all" || connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType))) {
+                const resultBlock = document.createElement("div")
+                resultBlock.className = "resultBlock"
                 const resultDiv = document.createElement("div")
                 resultDiv.className = "resultDiv"
                 const row1Div = document.createElement('div')
@@ -213,8 +216,9 @@ function renderResults() {
                 row1Div.appendChild(renderDirectionsButton(addressInfo))
                 resultDiv.appendChild(row1Div)
                 resultDiv.appendChild(renderConnections(station))
-                resultsContainer.appendChild(resultDiv)
-                station.resultElement = resultDiv
+                resultBlock.appendChild(resultDiv)
+                resultDisplay.appendChild(resultBlock)
+                station.resultElement = resultBlock
             }
         }
     })
@@ -245,7 +249,7 @@ function renderDirectionsButton(addressInfo) {
     const directionsButtonDiv = document.createElement('div')
     directionsButtonDiv.className = "directionsButtonDiv"
     const directionsButton = document.createElement('button')
-    directionsButton.className = "btn btn-md btn-default"
+    directionsButton.className = "btn btn-md btn-default button"
     directionsButton.classList.add("directionsButton")
     directionsButton.addEventListener('click', event => getCoordinatesFromBrowser(false, addressInfo))
     directionsButton.innerText = "Get Directions"

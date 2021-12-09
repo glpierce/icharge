@@ -13,32 +13,32 @@
       <div id="formContainer">
         <h4 class="searchTitle">Search by current location:</h4>
         <div id="currentLocationDiv">
-          <button class="btn btn-lg btn-default" id="currentLocationButton">Current Location</button>
+          <button class="btn btn-lg btn-default button" id="currentLocationButton">Current Location</button>
         </div>
-        <h4 class="searchTitle">Search by address:</h3>
+        <h4 class="searchTitle">Search by address:</h4>
         <form id="form">
           <div>
             <label for="street">Street Address</label>
-            <input type="text" id="street">
+            <input type="text" id="street" class = "addressInput">
           </div>
           <div>
               <label for="city">City</label>
-              <input type="text" id="city">
+              <input type="text" id="city" class = "addressInput">
           </div>
           <div>
             <label for="state">State/Province</label>
-            <input type="text" id="state">
+            <input type="text" id="state" class = "addressInput">
           </div>
           <div>
             <label for="zip">Zip Code</label>
-            <input type="text" id="zip" size="10">
+            <input type="text" id="zip" size="10" class = "addressInput">
           </div>
           <div>
             <label for="country">Country</label>
-            <input type="text" id="country" size="10">
+            <input type="text" id="country" size="10" class = "addressInput">
           </div>
           <div>
-            <input type="submit" class="btn btn-lg btn-default" id="submitButton" value="Search">
+            <input type="submit" class="btn btn-lg btn-default button" id="submitButton" value="Search">
           </div>
         </form>
       </div>
@@ -47,11 +47,11 @@
       <div id= "resultsContainer">
         <div id="resultsHeader">
           <span id="addressContainer">
-          <h4 id="searchResultsLabel">Search results for:</h3>
+          <h4 id="searchResultsLabel">Search results for:</h4>
           </span>
           <span>
             <span id="searchRadiusContainer">
-              <label for="searchRadius">Search Radius:</label>
+              <label for="searchRadius" class = "selectorText" >Search Radius:</label>
               <select name="searchRadius" id="searchRadius">
                 <option value="1">1mi</option>
                 <option value="5">5mi</option>
@@ -60,7 +60,7 @@
               </select>
             </span>
             <span id="connectionTypeContainer">
-              <label for="connectionType">Connection Type:</label>
+              <label for="connectionType" class = "selectorText" >Connection Type:</label>
               <select name="connectionType" id="connectionType">
                 <option value="all">All</option>
                 <option value="J1772">J1772</option>
@@ -69,6 +69,8 @@
               </select>
             </span>
           </span>
+        </div>
+        <div id = "resultDisplay">
         </div>
       </div>
     </div>

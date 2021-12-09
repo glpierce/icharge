@@ -1,3 +1,15 @@
+#resultDisplay{
+    overflow : scroll;
+    height: 600px;
+   
+}
+
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+
 #titleDiv {
     text-align: center;
     font-weight: bold;
@@ -16,14 +28,17 @@
     width: 1020px;
     border-style: solid;
     border-radius: 15px;
-    background-color: beige;
+    background-color:#4CB648;
+    border-color: #FCC72C !important;
+    border-width: thick;
     margin-top: 10px;
+
 }
 
 .searchTitle {
     text-align: center;
     font-weight: bold;
-    text-decoration: underline;
+  
 }
 
 #currentLocationDiv {
@@ -64,17 +79,20 @@
     height: 30px;
     display: flex;
     justify-content: space-between;
+    border-bottom: 4px solid #FCC72C;
 }
 
 #searchResultsLabel {
     margin-left: 10px;
     font-weight: bold;
     display: inline;
+    color:#E4F4FD;
 }
 
 #addressP {
     display: inline;
     margin-left: 8px;
+    color :#E4F4FD;
 }
 
 #searchRadiusContainer {
@@ -90,11 +108,14 @@
 .resultDiv {
     border-style: solid;
     border-radius: 15px;
-    background-color: beige;
+    border-width: thick;
+    background-color: #4CB648;
+    border-color: #FCC72C !important;
     margin-top: 5px;
-    margin-bottom: 5px;
-    width: 1020px;
-    float: left;
+    margin-bottom: 10px;
+    width: 850px;
+    
+
 }
 
 .row1Div{
@@ -147,4 +168,27 @@
 .connectionList {
     list-style-type: none;
     padding: 0;
+}
+
+.button{
+    background-color:#FCC72C !important;
+    color:#083C5A !important;
+    font-weight: bold !important;
+    border:4px solid #083C5A !important;
+    border-radius: 50px !important;
+}
+.selectorText{
+    color :#E4F4FD;
+}
+.resultBlock{
+    display:flex;
+    justify-content: space-around;
+}
+.addressInput{
+    border-radius: 5px;
+}
+
+body {
+    background-color: #083C5A !important;
+    
 }
