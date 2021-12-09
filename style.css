@@ -3,6 +3,10 @@
     font-weight: bold;
 }
 
+#mainTitle, #subTitle {
+    font-weight: bold;
+}
+
 #outerFormDiv {
     display: flex;
     justify-content: space-around;
