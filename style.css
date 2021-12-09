@@ -1,5 +1,6 @@
 #titleDiv {
     text-align: center;
+    font-weight: bold;
 }
 
 #outerFormDiv {
@@ -63,6 +64,7 @@
 
 #searchResultsLabel {
     margin-left: 10px;
+    font-weight: bold;
     display: inline;
 }
 
