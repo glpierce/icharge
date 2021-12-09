@@ -122,7 +122,7 @@ function renderResults() {
                 station.resultElement = resultDiv
             }
         }
-    });
+    })
 }
 
 // Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
