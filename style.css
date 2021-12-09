@@ -28,13 +28,14 @@
 
 #formContainer form {
     width: 1020px;
+    display: flex;
+    justify-content: space-evenly;
 }
 
 #formContainer form div{
-    float: left;
     text-align: center;
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
     margin-top: 3px;
     margin-bottom: 5px;
 }
