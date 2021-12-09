@@ -10,13 +10,18 @@
     margin-top: 10px;
 }
 
-#formTitle {
+.searchTitle {
     text-align: center;
     font-weight: bold;
     text-decoration: underline;
 }
 
-#formContainer div{
+#currentLocationDiv {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+#formContainer form div{
     float: left;
     text-align: center;
     margin-left: 10px;
@@ -32,31 +37,34 @@
 #resultsContainer {
     width: 1012px;
     position: absolute;
-    top: 200px;
+    top: 300px;
     visibility: hidden;
 }
 
 #resultsHeader {
     height: 30px;
+    display: flex;
+    justify-content: space-between;
 }
 
 #searchResultsLabel {
     margin-left: 10px;
-    margin-bottom: 5px;
-    float: left;
-    text-decoration: underline;
+    display: inline;
+}
+
+#addressP {
+    display: inline;
+    margin-left: 8px;
 }
 
 #searchRadiusContainer {
     margin-right: 10px;
     margin-top: 10px;
-    float: right;
 }
 
 #connectionTypeContainer {
     margin-right: 10px;
     margin-top: 10px;
-    float: right;
 }
 
 .resultDiv {
@@ -67,6 +75,11 @@
     margin-bottom: 5px;
     float: left;
     width: 1012px;
+}
+
+.row1Div{
+    display: flex;
+    justify-content: space-between;
 }
 
 .resultTitle {
@@ -86,6 +99,11 @@
     margin-top: 0px;
     margin-left: 15px;
     margin-bottom: 8px;
+}
+
+.directionsButton {
+    margin-right: 10px;
+    margin-top: 10px;
 }
 
 .connectionsInfoContainer {

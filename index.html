@@ -7,7 +7,11 @@
   <body>
     <h2 id="mainTitle">E-charge Finder</h2>
       <div id="formContainer">
-        <h4 id="formTitle">Search Location</h3>
+        <h4 class="searchTitle">Search by current location:</h4>
+        <div id="currentLocationDiv">
+          <button class="btn btn-lg btn-default" id="currentLocationButton">Current Location</button>
+        </div>
+        <h4 class="searchTitle">Search by address:</h3>
         <form id="form">
           <div>
             <label for="street">Street Address</label>
@@ -36,24 +40,28 @@
       </div>
       <div id= "resultsContainer">
         <div id="resultsHeader">
-          <h4 id="searchResultsLabel">Search Results:</h3>
-          <span id="searchRadiusContainer">
-            <label for="searchRadius">Search Radius:</label>
-            <select name="searchRadius" id="searchRadius">
-              <option value="1">1mi</option>
-              <option value="5">5mi</option>
-              <option value="10">10mi</option>
-              <option value="25">25mi</option>
-            </select>
+          <span id="addressContainer">
+          <h4 id="searchResultsLabel">Search results for:</h3>
           </span>
-          <span id="connectionTypeContainer">
-            <label for="connectionType">Connection Type:</label>
-            <select name="connectionType" id="connectionType">
-              <option value="all">All</option>
-              <option value="J1772">J1772</option>
-              <option value="IEC 62196-3">IEC 62196-3</option>
-              <option value="Tesla Supercharger">Tesla Supercharger</option>
-            </select>
+          <span>
+            <span id="searchRadiusContainer">
+              <label for="searchRadius">Search Radius:</label>
+              <select name="searchRadius" id="searchRadius">
+                <option value="1">1mi</option>
+                <option value="5">5mi</option>
+                <option value="10">10mi</option>
+                <option value="25">25mi</option>
+              </select>
+            </span>
+            <span id="connectionTypeContainer">
+              <label for="connectionType">Connection Type:</label>
+              <select name="connectionType" id="connectionType">
+                <option value="all">All</option>
+                <option value="J1772">J1772</option>
+                <option value="IEC 62196-3">IEC 62196-3</option>
+                <option value="Tesla Supercharger">Tesla Supercharger</option>
+              </select>
+            </span>
           </span>
         </div>
       </div>

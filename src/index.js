@@ -2,9 +2,17 @@
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
-// Global variables for latitude and longitude of input address
+// Global variable storing whether or not a search has been coonducted yet
+let firstSearch = false
+
+// Global variables for latitude and longitude of input address and directions origin
 let sourceLat
 let sourceLong
+let directionsLat
+let directionsLong
+
+// Global variable for storing the input address/current location address as a string 
+let addressString
 
 // Global variable for storing the results of the OC API hit
 let stationArray = []
@@ -19,8 +27,8 @@ document.addEventListener('DOMContentLoaded', event => {
     window.onresize = function() {arragePage()}
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
-    const form = document.querySelector('form')
-    form.addEventListener('submit', event => submitForm(event))
+    document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinates(true))
+    document.querySelector('form').addEventListener('submit', event => submitForm(event))
 })
 
 // Sets two major page elements (search block & results block) centered in the window
@@ -51,17 +59,51 @@ function removeResults(station) {
    }  
 }
 
+// Gets user's lat & long coordinates from the browser if possible and assigns to sourceLat & sourceLong or directionsLat & directionsLong variables respectively.
+// If the request is not for the source conditions (i.e. !forSource), addressInfo will be passed in and browser will open new tab with google maps directions for
+// route from source coordinates to destination coordinates
+function getCoordinates(forSource, addressInfo) {
+    if (forSource === false) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            directionsLat = parseFloat(position.coords.latitude)
+            directionsLong = parseFloat(position.coords.longitude)
+            window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
+        }, function(error) {
+            directionsLat = sourceLat
+            directionsLong = sourceLong
+            window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
+        })
+    } else {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            sourceLat = parseFloat(position.coords.latitude)
+            sourceLong = parseFloat(position.coords.longitude)
+            getAddressFromCoordinates(`${sourceLat},${sourceLong}`)
+            getChargePoints()
+        }, function(error) {
+            // Tell user that geolocation is not supported by this browser.";
+        })
+    }
+}
+
+function getAddressFromCoordinates(coordinateString) {
+    fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
+    .then(resp => resp.json())
+    .then(coordData => {
+        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? Math.round(coordData.data[0].postal_code) : "")} ${coordData.data[0].country_code}`
+    })
+}
+
 // Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
-    const addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
+    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
     event.target.reset()
-    getCoordinates(addressString)
+    getCoordinatesFromAddress(addressString)
 }
 
 // Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
 // which are stored in the global sourceLat & sourceLong variables. getChargePoints is then called
-function getCoordinates(addressString) {
+function getCoordinatesFromAddress(addressString) {
     fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
     .then(resp => resp.json())
     .then(coordData => {
@@ -84,7 +126,10 @@ function getChargePoints() {
     fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=25&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
-        console.log(data)
+        if (firstSearch === true) {
+            stationArray.forEach(station => removeResults(station))
+            stationArray = []
+        }
         data.forEach(station => stationArray.push({
             stationID: station.ID,
             stationUID: station.UUID,
@@ -108,7 +153,14 @@ function getChargePoints() {
 // If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
+    if (firstSearch === true) {
+        document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
+    }
     resultsContainer.style.visibility = "visible"
+    const addressP = document.createElement('p')
+    addressP.innerText = addressString
+    addressP.id = "addressP"
+    document.querySelector('#addressContainer').appendChild(addressP)
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
@@ -116,13 +168,18 @@ function renderResults() {
             if (connectionType === "all" || connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType))) {
                 const resultDiv = document.createElement("div")
                 resultDiv.className = "resultDiv"
-                resultDiv.appendChild(renderTitleAddress(addressInfo))
+                const row1Div = document.createElement('div')
+                row1Div.className = "row1Div"
+                row1Div.appendChild(renderTitleAddress(addressInfo))
+                row1Div.appendChild(renderDirectionsButton(addressInfo))
+                resultDiv.appendChild(row1Div)
                 resultDiv.appendChild(renderConnections(station))
                 resultsContainer.appendChild(resultDiv)
                 station.resultElement = resultDiv
             }
         }
     })
+    firstSearch = true
 }
 
 // Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
@@ -148,6 +205,18 @@ function renderTitleAddress(addressInfo) {
 function round(num, places) {
     const factorOfTen = Math.pow(10, places);
     return Math.round(num * factorOfTen)/factorOfTen;
+}
+
+function renderDirectionsButton(addressInfo) {
+    const directionsButtonDiv = document.createElement('div')
+    directionsButtonDiv.className = "directionsButtonDiv"
+    const directionsButton = document.createElement('button')
+    directionsButton.className = "btn btn-md btn-default"
+    directionsButton.classList.add("directionsButton")
+    directionsButton.addEventListener('click', event => getCoordinates(false, addressInfo))
+    directionsButton.innerText = "Get Directions"
+    directionsButtonDiv.appendChild(directionsButton)
+    return directionsButtonDiv
 }
 
 // Creates a div containing the station's connection information. Returns the div to renderResults to be rendered to the DOM
@@ -177,7 +246,7 @@ function renderConnections(station) {
             const ampsVolts = document.createElement('li')
             ampsVolts.innerText = `${connection.Amps}A ${connection.Voltage}V`
             ul.appendChild(ampsVolts)
-        }
+        } 
         connectionSpan.appendChild(ul)
         connectionsInfoContainer.appendChild(connectionSpan)
     })
