@@ -1,9 +1,14 @@
 #titleDiv {
     text-align: center;
 }
+
+#outerFormDiv {
+    display: flex;
+    justify-content: space-around;
+}
+
 #formContainer {
-    width: 1012px;
-    position: absolute;
+    width: 1020px;
     border-style: solid;
     border-radius: 15px;
     background-color: beige;
@@ -21,6 +26,10 @@
     margin-bottom: 25px;
 }
 
+#formContainer form {
+    width: 1020px;
+}
+
 #formContainer form div{
     float: left;
     text-align: center;
@@ -34,10 +43,14 @@
     display: block;
 }
 
+#outerResultsDiv {
+    display: flex;
+    justify-content: space-around;
+}
+
 #resultsContainer {
-    width: 1012px;
-    position: absolute;
-    top: 330px;
+    width: 1020px;
+    margin-top: 20px;
     visibility: hidden;
 }
 
@@ -73,8 +86,8 @@
     background-color: beige;
     margin-top: 5px;
     margin-bottom: 5px;
+    width: 1020px;
     float: left;
-    width: 1012px;
 }
 
 .row1Div{

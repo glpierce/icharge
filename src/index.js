@@ -35,8 +35,8 @@ let connectionType = "all"
 
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
-    arragePage()
-    window.onresize = function() {arragePage()}
+    //arragePage()
+    //window.onresize = function() {arragePage()}
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
     document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinatesFromBrowser(true))
