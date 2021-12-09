@@ -35,8 +35,6 @@ let connectionType = "all"
 
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
-    //arragePage()
-    //window.onresize = function() {arragePage()}
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
     document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinatesFromBrowser(true))
@@ -47,12 +45,6 @@ document.addEventListener('DOMContentLoaded', event => {
 ////
 /* MISC. FUNCTIONS */
 ////
-
-// Sets two major page elements (search block & results block) centered in the window
-function arragePage() {
-    document.querySelector('#formContainer').style.left = `${(window.innerWidth / 2) - 506}px`
-    document.querySelector('#resultsContainer').style.left = `${(window.innerWidth / 2) - 506}px`
-}
 
 // Takes in a number to be rounded and a number of decimal places to round to. Returns the rounded number
 function round(num, places) {
