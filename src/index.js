@@ -1,9 +1,16 @@
+////
+/* GLOBAL VARIABLES INITIALIZATION */
+////
+
 // Access keys for PositionStack (PS) & OpenChargeMap (OC) APIs
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
 // Global variable storing whether or not a search has been coonducted yet
-let firstSearch = false
+let firstSearchCompleted = false
+
+// Global variable storing whether a new search has been initiated
+let newSearch = false
 
 // Global variables for latitude and longitude of input address and directions origin
 let sourceLat
@@ -21,21 +28,42 @@ let stationArray = []
 let searchRadius = 1
 let connectionType = "all"
 
+
+////
+/* DOMContentLoaded & EVENT LISTENERS */
+////
+
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
     arragePage()
     window.onresize = function() {arragePage()}
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
-    document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinates(true))
+    document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinatesFromBrowser(true))
     document.querySelector('form').addEventListener('submit', event => submitForm(event))
 })
+
+
+////
+/* MISC. FUNCTIONS */
+////
 
 // Sets two major page elements (search block & results block) centered in the window
 function arragePage() {
     document.querySelector('#formContainer').style.left = `${(window.innerWidth / 2) - 506}px`
     document.querySelector('#resultsContainer').style.left = `${(window.innerWidth / 2) - 506}px`
 }
+
+// Takes in a number to be rounded and a number of decimal places to round to. Returns the rounded number
+function round(num, places) {
+    const factorOfTen = Math.pow(10, places);
+    return Math.round(num * factorOfTen)/factorOfTen;
+}
+
+
+////
+/* EVENT HANDLERS */
+////
 
 // Sets search radius variable to user selected value, removes every displayed result station, rerenders result stations within the search radius
 function changeSearchRadius(event) {
@@ -51,18 +79,45 @@ function changeConnectionType(event) {
     renderResults()
 }
 
-// If the station is currently being displayed, removes result display from DOM and removes reference to the DOM element from the stationArray
-function removeResults(station) {
-   if (station.resultElement) {
-        document.getElementById("resultsContainer").removeChild(station.resultElement)
-        delete station.resultElement
-   }  
+// Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
+function submitForm(event) {
+    event.preventDefault()
+    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
+    event.target.reset()
+    newSearch = true
+    getCoordinatesFromAddress(addressString)
+}
+
+
+////
+/* API FUNCTIONS */
+////
+
+//
+function getAddressFromCoordinates(coordinateString) {
+    fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
+    .then(resp => resp.json())
+    .then(coordData => {
+        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? Math.round(coordData.data[0].postal_code) : "")} ${coordData.data[0].country_code}`
+    })
+}
+
+// Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
+// which are stored in the global sourceLat & sourceLong variables. getChargePoints is then called
+function getCoordinatesFromAddress(addressString) {
+    fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
+    .then(resp => resp.json())
+    .then(coordData => {
+        sourceLat = parseFloat(coordData.data[0].latitude)
+        sourceLong = parseFloat(coordData.data[0].longitude)
+        getChargePoints()
+    })
 }
 
 // Gets user's lat & long coordinates from the browser if possible and assigns to sourceLat & sourceLong or directionsLat & directionsLong variables respectively.
 // If the request is not for the source conditions (i.e. !forSource), addressInfo will be passed in and browser will open new tab with google maps directions for
 // route from source coordinates to destination coordinates
-function getCoordinates(forSource, addressInfo) {
+function getCoordinatesFromBrowser(forSource, addressInfo) {
     if (forSource === false) {
         navigator.geolocation.getCurrentPosition(function(position) {
             directionsLat = parseFloat(position.coords.latitude)
@@ -77,40 +132,13 @@ function getCoordinates(forSource, addressInfo) {
         navigator.geolocation.getCurrentPosition(function(position) {
             sourceLat = parseFloat(position.coords.latitude)
             sourceLong = parseFloat(position.coords.longitude)
+            newSearch = true
             getAddressFromCoordinates(`${sourceLat},${sourceLong}`)
             getChargePoints()
         }, function(error) {
             // Tell user that geolocation is not supported by this browser.";
         })
     }
-}
-
-function getAddressFromCoordinates(coordinateString) {
-    fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
-    .then(resp => resp.json())
-    .then(coordData => {
-        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? Math.round(coordData.data[0].postal_code) : "")} ${coordData.data[0].country_code}`
-    })
-}
-
-// Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
-function submitForm(event) {
-    event.preventDefault()
-    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
-    event.target.reset()
-    getCoordinatesFromAddress(addressString)
-}
-
-// Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
-// which are stored in the global sourceLat & sourceLong variables. getChargePoints is then called
-function getCoordinatesFromAddress(addressString) {
-    fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
-    .then(resp => resp.json())
-    .then(coordData => {
-        sourceLat = parseFloat(coordData.data[0].latitude)
-        sourceLong = parseFloat(coordData.data[0].longitude)
-        getChargePoints()
-    })
 }
 
 // Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
@@ -126,7 +154,7 @@ function getChargePoints() {
     fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=25&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
-        if (firstSearch === true) {
+        if (firstSearchCompleted === true) {
             stationArray.forEach(station => removeResults(station))
             stationArray = []
         }
@@ -147,14 +175,33 @@ function getChargePoints() {
     })
 }
 
+
+////
+/* DOM FUNCTIONS*/
+////
+
+// If the station is currently being displayed, removes result display from DOM and removes reference to the DOM element from the stationArray
+function removeResults(station) {
+    if (station.resultElement) {
+         document.getElementById("resultsContainer").removeChild(station.resultElement)
+         delete station.resultElement
+    }
+}  
+
 // Makes the results container visible, for each station in the stationArray checks if...
 // 1. Its distance from sourceLat,Long is within search radius.
 // 2. It has a connection type which matches the user selection.
 // If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
-    if (firstSearch === true) {
+    if (firstSearchCompleted === true) {
         document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
+    }
+    if (newSearch === true) {
+        document.getElementById('searchRadius').selectedIndex = 0
+        document.getElementById('connectionType').selectedIndex = 0
+        searchRadius = 1
+        connectionType = "all"
     }
     resultsContainer.style.visibility = "visible"
     const addressP = document.createElement('p')
@@ -179,7 +226,8 @@ function renderResults() {
             }
         }
     })
-    firstSearch = true
+    firstSearchCompleted = true
+    newSearch = false
 }
 
 // Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
@@ -201,19 +249,13 @@ function renderTitleAddress(addressInfo) {
     return resultTitleDiv
 }
 
-// Takes in a number to be rounded and a number of decimal places to round to. Returns the rounded number
-function round(num, places) {
-    const factorOfTen = Math.pow(10, places);
-    return Math.round(num * factorOfTen)/factorOfTen;
-}
-
 function renderDirectionsButton(addressInfo) {
     const directionsButtonDiv = document.createElement('div')
     directionsButtonDiv.className = "directionsButtonDiv"
     const directionsButton = document.createElement('button')
     directionsButton.className = "btn btn-md btn-default"
     directionsButton.classList.add("directionsButton")
-    directionsButton.addEventListener('click', event => getCoordinates(false, addressInfo))
+    directionsButton.addEventListener('click', event => getCoordinatesFromBrowser(false, addressInfo))
     directionsButton.innerText = "Get Directions"
     directionsButtonDiv.appendChild(directionsButton)
     return directionsButtonDiv
