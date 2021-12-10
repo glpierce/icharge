@@ -115,10 +115,9 @@ function getCoordinatesFromAddress(addressString) {
 }
 
 // Gets user's lat & long coordinates from the browser if possible and assigns to searchLat & searchLong or directionsLat & directionsLong variables respectively.
-// If the request is not for the source conditions (i.e. !newSearch), addressInfo will be passed in and browser will open new tab with google maps directions for
-// route from source coordinates to destination coordinates
+// If the browser request for geolocation is denied, browser will display error message in an alert.
 function getCoordinatesFromBrowser(addressInfo) {
-    if (newSearch === false) {
+    if (!newSearch) {
         navigator.geolocation.getCurrentPosition(function(position) {
             directionsLat = parseFloat(position.coords.latitude)
             directionsLong = parseFloat(position.coords.longitude)
@@ -144,8 +143,8 @@ function getCoordinatesFromBrowser(addressInfo) {
 }
 
 // Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
-// of e-charge stations within 25mi of the searchLat,Long. Relevant data is then extracted from the response and stored in the global stationArray. Finally,
-// renderResults is called
+// of e-charge stations within 25mi of the searchLat,Long. If this is  not the first search after page load, calls removeResults and resets station array.
+// Relevant data is then extracted from the response and stored in the global stationArray. Finally, renderResults is called.
 function getChargePoints() {
     const getObj = {
         method: 'GET',
