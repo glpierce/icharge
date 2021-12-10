@@ -107,7 +107,6 @@ function getAddressFromCoordinates(coordinateString) {
     })
     .catch(error => {
         document.querySelector(".loader").style.display = "none";
-        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
     })
 }
 
@@ -124,7 +123,6 @@ function getCoordinatesFromAddress(addressString) {
     })
     .catch(error => {
         document.querySelector(".loader").style.display = "none";
-        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
     })
 }
 
@@ -191,7 +189,6 @@ function getChargePoints() {
     })
     .catch(error => {
         document.querySelector(".loader").style.display = "none";
-        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
     })
 }
 
