@@ -330,11 +330,29 @@ function renderConnections(station) {
 
 //
 function renderConnectionImage(connection, connectionDiv) {
+    const ctimg = document.createElement('img')
+    ctimg.className = "ctimg"
     if (connection.ConnectionType.FormalName && (!connection.ConnectionType.FormalName.includes("Small Paddle") && !connection.ConnectionType.FormalName.includes("Not Specified"))) {
-        const ctimg = document.createElement('img')
-        ctimg.className = "ctimg"
         ctimg.src = getImage(connection.ConnectionType.FormalName)
-        connectionDiv.appendChild(ctimg)
+    } else {
+        ctimg.src = getImage("")
+    }
+    connectionDiv.appendChild(ctimg)
+}
+
+// takes in the connector type string and outputs the appropraite connector image path
+function getImage(imageString) {
+    if (imageString.includes("J1772")) {
+        return "./assets/Type1_J1772.png"
+    } else if (imageString.includes("Configuration EE")) {
+        return "./assets/CCS1.png"
+    } else if (imageString.includes("Tesla")) {
+        return "./assets/tesla.png"
+    } else if (imageString.includes("CHAdeMO") || (imageString.includes("Configuration AA"))) {
+        return "./assets/CHAdeMO.png"
+    } else {
+        console.log(imageString)
+        return "./assets/question_mark.png"
     }
 }
 
@@ -358,19 +376,6 @@ function renderConnectionDetails(connection, connectionDiv) {
             ul.appendChild(ampsVolts)
         } 
         connectionDiv.appendChild(ul)
-}
-
-// takes in the connector type string and outputs the appropraite connector image path
-function getImage(imageString) {
-    if (imageString.includes("J1772")) {
-        return "./assets/Type1_J1772.png"
-    } else if (imageString.includes("Configuration EE")) {
-        return "./assets/CCS1.png"
-    } else if (imageString.includes("Tesla")) {
-        return "./assets/tesla.png"
-    } else if (imageString.includes("CHAdeMO") || (imageString.includes("Configuration AA"))) {
-        return "./assets/CHAdeMO.png"
-    }
 }
 
 //
