@@ -6,11 +6,11 @@
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
-// Global variable storing whether or not a first search has been conducted
+// Global variable storing whether or not a first search has been conducted after page load
 let firstSearchCompleted = false
 
 // Global variable storing whether or not a new search has been initiated
-let newSearch = false
+let newSearchInitiated = false
 
 // Global variables for latitude and longitude of the search address and directions origin
 let searchLat
@@ -33,12 +33,13 @@ let connectionType = "all"
 /* DOMContentLoaded & NON-ITERATED EVENT LISTENERS */
 ////
 
-//When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
+// When DOM is loaded, adds event listener for search radius selector, connection type selector, adds current location button event listener,
+// adds submit form event listener
 document.addEventListener('DOMContentLoaded', event => {
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
     document.querySelector('#currentLocationButton').addEventListener('click', event => {
-        newSearch = true
+        newSearchInitiated = true
         getCoordinatesFromBrowser()
     })
     document.querySelector('form').addEventListener('submit', event => submitForm(event))
@@ -60,21 +61,24 @@ function round(num, places) {
 /* EVENT HANDLERS */
 ////
 
-// Sets search radius variable to user selected value, removes every displayed result station, rerenders result stations within the search radius
+// Called as a callback when new search radius selected. Sets search radius variable to user selected value, removes every displayed result station, 
+// calls renderResults() to rerender result stations within the search radius
 function changeSearchRadius(event) {
     searchRadius = parseInt(event.target.value, 10)
     stationArray.forEach(station => removeResults(station))
     renderResults()
 }
 
-// Sets connection type variable to user selected value, removes every displayed result station, rerenders result stations with a matching connection type
+// Called as a callback when new connection type selected. Sets connection type variable to user selected value, removes every displayed result station, 
+// calls renderResults() to rerender result stations with a matching connection type
 function changeConnectionType(event) {
     connectionType = event.target.value
     stationArray.forEach(station => removeResults(station))
     renderResults()
 }
 
-// Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
+// Called as a callback when submit button is clicked. Prevents default page reload. If not first search after page load, removes every displayed result statiion,
+// hides resultsContainer. Displays loader, sets newSearchInitiated to true, converts inputs into an address string, resets form, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
     if (firstSearchCompleted) {
@@ -82,7 +86,7 @@ function submitForm(event) {
         document.getElementById("resultsContainer").style.visibility = "hidden";
     }
     document.querySelector(".loader").style.display = "block";
-    newSearch = true
+    newSearchInitiated = true
     addressString = `${(event.target[0].value ? `${event.target[0].value}, ` : "" )}${(event.target[1].value ? `${event.target[1].value}, ` : "" )}${(event.target[2].value ? `${event.target[2].value} ` : "")}${(event.target[3].value ? `${event.target[3].value} ` : "")}${(event.target[4].value ? `${event.target[4].value}` : "")}`
     event.target.reset()
     getCoordinatesFromAddress(addressString)
@@ -93,7 +97,8 @@ function submitForm(event) {
 /* API FUNCTIONS */
 ////
 
-//
+// Takes in coordinate string, sends GET request to position stack API to get address, parses server response and extracts relevant data to construct 
+// an addressString. If promise returns an error, hides loader and displays error alert 
 function getAddressFromCoordinates(coordinateString) {
     fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
     .then(resp => resp.json())
@@ -106,8 +111,9 @@ function getAddressFromCoordinates(coordinateString) {
     })
 }
 
-// Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
-// which are stored in the global searchLat & searchLong variables. getChargePoints is then called
+// Takes in address string from submitForm and initiates a GET request to position stack API, parses server response and extracts latitute and longitude
+// values which are stored in searchLat & searchLong global variables, calls getChargePoints. If promise returns an error, hides loader and displays error 
+// alert 
 function getCoordinatesFromAddress(addressString) {
     fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
     .then(resp => resp.json())
@@ -122,10 +128,11 @@ function getCoordinatesFromAddress(addressString) {
     })
 }
 
-// Gets user's lat & long coordinates from the browser if possible and assigns to searchLat & searchLong or directionsLat & directionsLong variables respectively.
-// If the browser request for geolocation is denied, browser will display error message in an alert.
+// Gets user's lat & long coordinates from the browser if possible and assigns to searchLat & searchLong or directionsLat & directionsLong variables 
+// respectively, opens new google maps directions browser tab if !newSearchInitiated, otherwise calls getAddressFromCoordinates() and getChargePoints(). If the 
+// browser request for geolocation is denied, browser will display error message in an alert.
 function getCoordinatesFromBrowser(addressInfo) {
-    if (!newSearch) {
+    if (!newSearchInitiated) {
         navigator.geolocation.getCurrentPosition(function(position) {
             directionsLat = parseFloat(position.coords.latitude)
             directionsLong = parseFloat(position.coords.longitude)
@@ -150,9 +157,10 @@ function getCoordinatesFromBrowser(addressInfo) {
     }
 }
 
-// Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
-// of e-charge stations within 25mi of the searchLat,Long. If this is  not the first search after page load, calls removeResults and resets station array.
-// Relevant data is then extracted from the response and stored in the global stationArray. Finally, renderResults is called.
+// Constructs GET payload, specifying JSON content type, initiates GET request to open charge map API with searchLat & searchLong query arguemnts,
+// parses server response. If not the first search after page load (!firstSearchCompleted), calls removeResults and resets station array. Upon
+// successful server response, parses response and extracts relevant data for each charge station. Each charge station object is pushed into 
+// stationArray. Finally, renderResults is called. If promise returns an error, hides loader and displays error alert 
 function getChargePoints() {
     const getObj = {
         method: 'GET',
@@ -192,7 +200,8 @@ function getChargePoints() {
 /* DOM FUNCTIONS*/
 ////
 
-// If the station is currently being displayed, removes result display from DOM and removes reference to the DOM element from the stationArray
+// Takes in a station object from stationArray. If the station is currently being displayed, removes result display from DOM and removes 
+// DOM element key-value pair from stationArray
 function removeResults(station) {
     if (station.resultElement) {
          document.getElementById("resultDisplay").removeChild(station.resultElement)
@@ -200,10 +209,10 @@ function removeResults(station) {
     }
 }  
 
-// Makes the results container visible, for each station in the stationArray checks if...
-// 1. Its distance from searchLat,Long is within search radius.
-// 2. It has a connection type which matches the user selection.
-// If so, renders the relevant station data 
+// Creates div containers, calls initializeRender() to prepare result display area, calls renderAddressP() to render search address string 
+// to DOM. For each charge station in stationArray, extracts address info & connections info, calls renderStationResult() to render the station's
+// result block to DOM. Calls renderNoResults(), sets firstSearchCompleted to true and newSearchInitiated to false, b/c the current search has 
+// been completed
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
     const resultDisplay = document.querySelector("#resultDisplay")
@@ -216,10 +225,13 @@ function renderResults() {
     })
     renderNoResults(resultDisplay)
     firstSearchCompleted = true
-    newSearch = false
+    newSearchInitiated = false
 }
 
-//
+// Takes in result display containers. If not first search after page load (firstSearchCompleted), removes the old search address string rendered to DOM
+// so it can be replaced by new search address string. If the noResults h3 is being displayed, removes it from DOM. If first render after new seach has 
+// been initiated (newSearchInitiated) resets search radius and connection type selectors to default selection and resets corresponding global variables
+// to default values. Finally, hides the loader and makes the results display container visible
 function initializeRender(resultsContainer, resultDisplay) {
     if (firstSearchCompleted) {
         document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
@@ -227,7 +239,7 @@ function initializeRender(resultsContainer, resultDisplay) {
     if (document.querySelector(".noResults")) {
         resultDisplay.removeChild(document.querySelector(".noResults"))
     }
-    if (newSearch) {
+    if (newSearchInitiated) {
         document.getElementById('searchRadius').selectedIndex = 1
         document.getElementById('connectionType').selectedIndex = 0
         searchRadius = 5
@@ -237,7 +249,7 @@ function initializeRender(resultsContainer, resultDisplay) {
     resultsContainer.style.visibility = "visible"
 }
 
-//
+// Creates a "p" element, sets its inner text equal to search address string, adds a class fro styling in CSS, renders the "p" to the DOM
 function renderAddressP() {
     const addressP = document.createElement('p')
     addressP.innerText = addressString
@@ -245,7 +257,11 @@ function renderAddressP() {
     document.querySelector('#addressContainer').appendChild(addressP)
 }
 
-//
+// Takes in a staion, its associated addressInfo & connectionsInfo, and the result display "div" element. Performs checks to render only stations that
+// match search criteria (search radius, connection type). If station matches criteria, constructs nested "div" elements for storing station information,
+// Get Directions button & connection type image. Appends the information elements to the DOM via the return values of their constructor functions, adds
+// resultElement key to the station and stores the station's result block there (n.b. the station is passed by reference from stationArray, so adding, the
+// key value pair to the station also adds it in the stationArray global variable)
 function renderStationResult(station, addressInfo, connectionsInfo, resultDisplay) {
     if (addressInfo.Distance <= searchRadius && !(connectionsInfo.length === 0)) {
         let chademo = false
@@ -271,7 +287,8 @@ function renderStationResult(station, addressInfo, connectionsInfo, resultDispla
     }
 }
 
-// Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
+// Creates a "div" to contain the elements displaying station's title, address, and distance from user. Creates those elements and usses information
+// extracted from addressInfo for innerText values. Returns the container "div" to renderStationResult to be rendered to the DOM
 function renderResultTitleAddress(addressInfo) {
     const resultTitleDiv = document.createElement('div')
     resultTitleDiv.className = "resultTitleDiv"
@@ -290,7 +307,8 @@ function renderResultTitleAddress(addressInfo) {
     return resultTitleDiv
 }
 
-// creates the Get Directions button and add the event listener
+// Creates the Get Directions div & button and adds a click event listener to the button. Sets button text value and appends the button to its container.
+// The container is returned to renderStationResult to be rendered to the DOM
 function renderDirectionsButton(addressInfo) {
     const directionsButtonDiv = document.createElement('div')
     directionsButtonDiv.className = "directionsButtonDiv"
@@ -298,7 +316,7 @@ function renderDirectionsButton(addressInfo) {
     directionsButton.className = "btn btn-md btn-default button"
     directionsButton.classList.add("directionsButton")
     directionsButton.addEventListener('click', event => {
-        newSearch = false
+        newSearchInitiated = false
         getCoordinatesFromBrowser(addressInfo)
     })
     directionsButton.innerText = "Get Directions"
@@ -306,7 +324,8 @@ function renderDirectionsButton(addressInfo) {
     return directionsButtonDiv
 }
 
-//
+// Creates an "h5" element to display the "Connections:" header in the result block. Adds a class for CSS styling and returns the "h5" to
+// renderStationResult to be rendered to the DOM
 function renderConnectionsTitle() {
     const connectionsTitle = document.createElement('h5')
     connectionsTitle.innerText = "Connections:"
@@ -314,7 +333,9 @@ function renderConnectionsTitle() {
     return connectionsTitle
 }
 
-// Creates a div containing the station's connection information. Returns the div to renderResults to be rendered to the DOM
+// Takes in a chage station. Creates a "div" containing the station's connection information. For each connection creates a "div", adds a class
+// for styling in CSS, calls renderConnectionImage & renderConnectionDetails to append connection info to the "div". Returns the "div" to 
+// renderStationResult to be rendered to the DOM
 function renderConnections(station) {
     const connectionsInfoContainer = document.createElement('div')
     connectionsInfoContainer.className = "connectionsInfoContainer"
@@ -328,7 +349,7 @@ function renderConnections(station) {
     return connectionsInfoContainer
 }
 
-//
+// Takes in a station connection object and the associated "div", creates an img element, sets image src via getImage() and appends the image to the div
 function renderConnectionImage(connection, connectionDiv) {
     const ctimg = document.createElement('img')
     ctimg.className = "ctimg"
@@ -340,7 +361,7 @@ function renderConnectionImage(connection, connectionDiv) {
     connectionDiv.appendChild(ctimg)
 }
 
-// takes in the connector type string and outputs the appropraite connector image path
+// Takes in the connector type string and returns the appropraite connector image path
 function getImage(imageString) {
     if (imageString.includes("J1772")) {
         return "./assets/Type1_J1772.png"
@@ -351,12 +372,12 @@ function getImage(imageString) {
     } else if (imageString.includes("CHAdeMO") || (imageString.includes("Configuration AA"))) {
         return "./assets/CHAdeMO.png"
     } else {
-        console.log(imageString)
         return "./assets/question_mark.png"
     }
 }
 
-//
+// Takes in a statino connection and the assoociated "div", creates a "ul" element fr storing connection info, creates "li" elements for connection type
+// charge rate, current, and Amps/Volts values. Appends "li"'s to the "ul" and appends the "ul" to the "div"
 function renderConnectionDetails(connection, connectionDiv) {
     const ul = document.createElement('ul')
         ul.className = "connectionList"
@@ -378,7 +399,8 @@ function renderConnectionDetails(connection, connectionDiv) {
         connectionDiv.appendChild(ul)
 }
 
-//
+// Takes in the result display "div", checks if any station result blocks have been rendered, if not (!stationArray.find(station => station.resultElement)),
+// creates and "h3" element to inform the user that no charging stations were found and appends it to the result display "div" to render it to the DOM
 function renderNoResults(resultDisplay) {
     if (!stationArray.find(station => station.resultElement)) {
         const noResults = document.createElement('h3')
