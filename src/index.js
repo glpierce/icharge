@@ -83,7 +83,7 @@ function submitForm(event) {
     }
     document.querySelector(".loader").style.display = "block";
     newSearch = true
-    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
+    addressString = `${(event.target[0].value ? `${event.target[0].value}, ` : "" )}${(event.target[1].value ? `${event.target[1].value}, ` : "" )}${(event.target[2].value ? `${event.target[2].value} ` : "")}${(event.target[3].value ? `${event.target[3].value} ` : "")}${(event.target[4].value ? `${event.target[4].value}` : "")}`
     event.target.reset()
     getCoordinatesFromAddress(addressString)
 }
@@ -100,6 +100,10 @@ function getAddressFromCoordinates(coordinateString) {
     .then(coordData => {
         addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? coordData.data[0].postal_code.toString().slice(0, 5) : "")} ${coordData.data[0].country_code}`
     })
+    .catch(error => {
+        document.querySelector(".loader").style.display = "none";
+        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
+    })
 }
 
 // Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
@@ -111,6 +115,10 @@ function getCoordinatesFromAddress(addressString) {
         searchLat = parseFloat(coordData.data[0].latitude)
         searchLong = parseFloat(coordData.data[0].longitude)
         getChargePoints()
+    })
+    .catch(error => {
+        document.querySelector(".loader").style.display = "none";
+        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
     })
 }
 
@@ -171,8 +179,11 @@ function getChargePoints() {
             operatorInfo: station.OperatorInfo,
             addressInfo: station.AddressInfo
         }))
-        console.log(stationArray)
         renderResults()
+    })
+    .catch(error => {
+        document.querySelector(".loader").style.display = "none";
+        alert("There has been a problem communicating with the server. Please refresh the page and try again.")
     })
 }
 
@@ -195,8 +206,12 @@ function removeResults(station) {
 // If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
+    const resultDisplay = document.querySelector("#resultDisplay")
     if (firstSearchCompleted) {
         document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
+    }
+    if (document.querySelector(".noResults")) {
+        resultDisplay.removeChild(document.querySelector(".noResults"))
     }
     if (newSearch) {
         document.getElementById('searchRadius').selectedIndex = 1
@@ -210,7 +225,6 @@ function renderResults() {
     addressP.innerText = addressString
     addressP.id = "addressP"
     document.querySelector('#addressContainer').appendChild(addressP)
-    const resultDisplay = document.querySelector("#resultDisplay")
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
@@ -240,6 +254,12 @@ function renderResults() {
             }
         }
     })
+    if (!stationArray.find(station => station.resultElement)) {
+        const noResults = document.createElement('h3')
+        noResults.className = "noResults"
+        noResults.innerText = "No charging stations found..."
+        resultDisplay.appendChild(noResults)
+    }
     firstSearchCompleted = true
     newSearch = false
 }

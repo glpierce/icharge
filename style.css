@@ -1,6 +1,7 @@
 #resultDisplay {
     overflow : scroll;
     height: calc(100vh - 483px);
+    text-align: center;
 }
 
 ::-webkit-scrollbar {
@@ -131,18 +132,21 @@
     margin-bottom: 3px;
     text-decoration: underline;
     font-weight: bold;
+    text-align: left
 }
 
 .resultAddress {
     font-weight: bold;
     margin-left: 15px;
     margin-bottom: 0px;
+    text-align: left;
 }
 
 .resultDistance {
     margin-top: 0px;
     margin-left: 15px;
     margin-bottom: 8px;
+    text-align: left;
 }
 
 .directionsButton {
@@ -155,6 +159,7 @@
     text-decoration: underline;
     margin-left: 15px;
     margin-bottom: 5px;
+    text-align: left;
 }
 
 .connectionsInfoContainer {
@@ -180,6 +185,7 @@
 .connectionList {
     list-style-type: none;
     padding: 0;
+    text-align: left;
 }
 
 .button {
@@ -246,4 +252,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+}
+
+.noResults {
+    color: #FCC72C;
+    font-weight: bold;
+    font-style: italic;
 }
