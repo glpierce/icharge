@@ -37,7 +37,10 @@ let connectionType = "all"
 document.addEventListener('DOMContentLoaded', event => {
     document.querySelector('#searchRadius').addEventListener('change', event => changeSearchRadius(event))
     document.querySelector('#connectionType').addEventListener('change', event => changeConnectionType(event))
-    document.querySelector('#currentLocationButton').addEventListener('click', event => getCoordinatesFromBrowser(true))
+    document.querySelector('#currentLocationButton').addEventListener('click', event => {
+        newSearch = true
+        getCoordinatesFromBrowser()
+    })
     document.querySelector('form').addEventListener('submit', event => submitForm(event))
 })
 
@@ -90,7 +93,7 @@ function getAddressFromCoordinates(coordinateString) {
     fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
     .then(resp => resp.json())
     .then(coordData => {
-        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? Math.round(coordData.data[0].postal_code) : "")} ${coordData.data[0].country_code}`
+        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? coordData.data[0].postal_code.toString().slice(0, 6) : "")} ${coordData.data[0].country_code}`
     })
 }
 
@@ -107,10 +110,10 @@ function getCoordinatesFromAddress(addressString) {
 }
 
 // Gets user's lat & long coordinates from the browser if possible and assigns to searchLat & searchLong or directionsLat & directionsLong variables respectively.
-// If the request is not for the source conditions (i.e. !forSource), addressInfo will be passed in and browser will open new tab with google maps directions for
+// If the request is not for the source conditions (i.e. !newSearch), addressInfo will be passed in and browser will open new tab with google maps directions for
 // route from source coordinates to destination coordinates
-function getCoordinatesFromBrowser(forSource, addressInfo) {
-    if (forSource === false) {
+function getCoordinatesFromBrowser(addressInfo) {
+    if (newSearch === false) {
         navigator.geolocation.getCurrentPosition(function(position) {
             directionsLat = parseFloat(position.coords.latitude)
             directionsLong = parseFloat(position.coords.longitude)
@@ -124,11 +127,11 @@ function getCoordinatesFromBrowser(forSource, addressInfo) {
         navigator.geolocation.getCurrentPosition(function(position) {
             searchLat = parseFloat(position.coords.latitude)
             searchLong = parseFloat(position.coords.longitude)
-            newSearch = true
             getAddressFromCoordinates(`${searchLat},${searchLong}`)
             getChargePoints()
         }, function(error) {
-            // TO DO: Tell user that geolocation is not supported by this browser.";
+            console.log(error)
+            alert(`${error.message}. Have fun walking...`)
         })
     }
 }
@@ -251,7 +254,10 @@ function renderDirectionsButton(addressInfo) {
     const directionsButton = document.createElement('button')
     directionsButton.className = "btn btn-md btn-default button"
     directionsButton.classList.add("directionsButton")
-    directionsButton.addEventListener('click', event => getCoordinatesFromBrowser(false, addressInfo))
+    directionsButton.addEventListener('click', event => {
+        newSearch = false
+        getCoordinatesFromBrowser(addressInfo)
+    })
     directionsButton.innerText = "Get Directions"
     directionsButtonDiv.appendChild(directionsButton)
     return directionsButtonDiv
@@ -303,6 +309,6 @@ function getImage(imageString) {
     } else if (imageString.includes("62196")) {
         return "./assets/62196.png"
     } else if (imageString.includes("Tesla")) {
-        return "./assets/Tesla.png"
+        return "./assets/tesla.png"
     }
 }
