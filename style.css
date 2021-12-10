@@ -1,13 +1,11 @@
-#resultDisplay{
+#resultDisplay {
     overflow : scroll;
     height: calc(100vh - 473.5px);  
 }
 
-
 ::-webkit-scrollbar {
     display: none;
 }
-
 
 #titleDiv {
     text-align: center;
@@ -32,13 +30,11 @@
     border-color: #FCC72C !important;
     border-width: thick;
     margin-top: 10px;
-
 }
 
 .searchTitle {
     text-align: center;
     font-weight: bold;
-  
 }
 
 #currentLocationDiv {
@@ -86,13 +82,13 @@
     margin-left: 10px;
     font-weight: bold;
     display: inline;
-    color:#E4F4FD;
+    color: #E4F4FD;
 }
 
 #addressP {
     display: inline;
     margin-left: 8px;
-    color :#E4F4FD;
+    color: #E4F4FD;
 }
 
 #searchRadiusContainer {
@@ -118,7 +114,7 @@
 
 }
 
-.row1Div{
+.row1Div {
     display: flex;
     justify-content: space-between;
 }
@@ -137,7 +133,7 @@
     margin-bottom: 0px;
 }
 
-.resultDistance{
+.resultDistance {
     margin-top: 0px;
     margin-left: 15px;
     margin-bottom: 8px;
@@ -170,21 +166,24 @@
     padding: 0;
 }
 
-.button{
-    background-color:#FCC72C !important;
-    color:#083C5A !important;
+.button {
+    background-color: #FCC72C !important;
+    color: #083C5A !important;
     font-weight: bold !important;
-    border:4px solid #083C5A !important;
+    border: 4px solid #083C5A !important;
     border-radius: 50px !important;
 }
-.selectorText{
+
+.selectorText {
     color :#E4F4FD;
 }
-.resultBlock{
+
+.resultBlock {
     display:flex;
     justify-content: space-around;
 }
-.addressInput{
+
+.addressInput {
     border-radius: 5px;
 }
 #logo{

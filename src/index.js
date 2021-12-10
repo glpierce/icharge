@@ -6,31 +6,31 @@
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
-// Global variable storing whether or not a search has been coonducted yet
+// Global variable storing whether or not a first search has been conducted
 let firstSearchCompleted = false
 
-// Global variable storing whether a new search has been initiated
+// Global variable storing whether or not a new search has been initiated
 let newSearch = false
 
-// Global variables for latitude and longitude of input address and directions origin
-let sourceLat
-let sourceLong
+// Global variables for latitude and longitude of the search address and directions origin
+let searchLat
+let searchLong
 let directionsLat
 let directionsLong
 
-// Global variable for storing the input address/current location address as a string 
+// Global variable for storing the search address as a string 
 let addressString
 
-// Global variable for storing the results of the OC API hit
+// Global variable for storing the results of the OpenChargeMap API hit (charging locations)
 let stationArray = []
 
-// GLobal variables for storing selected search radius in miles, connection type, and current type
+// GLobal variables for storing selected search radius in miles, connection type
 let searchRadius = 1
 let connectionType = "all"
 
 
 ////
-/* DOMContentLoaded & EVENT LISTENERS */
+/* DOMContentLoaded & NON-ITERATED EVENT LISTENERS */
 ////
 
 //When DOM is loaded, centers main page elements, adds event listener for search radius selector, adds submit form event listener
@@ -64,7 +64,7 @@ function changeSearchRadius(event) {
     renderResults()
 }
 
-// Sets connection type variable to user selected value, removes every displayed result station, rerenders result stations with matching connection type
+// Sets connection type variable to user selected value, removes every displayed result station, rerenders result stations with a matching connection type
 function changeConnectionType(event) {
     connectionType = event.target.value
     stationArray.forEach(station => removeResults(station))
@@ -74,9 +74,9 @@ function changeConnectionType(event) {
 // Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
-    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
     event.target.reset()
     newSearch = true
+    addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
     getCoordinatesFromAddress(addressString)
 }
 
@@ -95,18 +95,18 @@ function getAddressFromCoordinates(coordinateString) {
 }
 
 // Takes the address string from submitForm and initiates a GET request to PS API. The promise resolves to the lat & long coordinates of the address
-// which are stored in the global sourceLat & sourceLong variables. getChargePoints is then called
+// which are stored in the global searchLat & searchLong variables. getChargePoints is then called
 function getCoordinatesFromAddress(addressString) {
     fetch(`http://api.positionstack.com/v1/forward?access_key=${psaccesskey}&query=${addressString}&limit=1`)
     .then(resp => resp.json())
     .then(coordData => {
-        sourceLat = parseFloat(coordData.data[0].latitude)
-        sourceLong = parseFloat(coordData.data[0].longitude)
+        searchLat = parseFloat(coordData.data[0].latitude)
+        searchLong = parseFloat(coordData.data[0].longitude)
         getChargePoints()
     })
 }
 
-// Gets user's lat & long coordinates from the browser if possible and assigns to sourceLat & sourceLong or directionsLat & directionsLong variables respectively.
+// Gets user's lat & long coordinates from the browser if possible and assigns to searchLat & searchLong or directionsLat & directionsLong variables respectively.
 // If the request is not for the source conditions (i.e. !forSource), addressInfo will be passed in and browser will open new tab with google maps directions for
 // route from source coordinates to destination coordinates
 function getCoordinatesFromBrowser(forSource, addressInfo) {
@@ -116,25 +116,25 @@ function getCoordinatesFromBrowser(forSource, addressInfo) {
             directionsLong = parseFloat(position.coords.longitude)
             window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
         }, function(error) {
-            directionsLat = sourceLat
-            directionsLong = sourceLong
+            directionsLat = searchLat
+            directionsLong = searchLong
             window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
         })
     } else {
         navigator.geolocation.getCurrentPosition(function(position) {
-            sourceLat = parseFloat(position.coords.latitude)
-            sourceLong = parseFloat(position.coords.longitude)
+            searchLat = parseFloat(position.coords.latitude)
+            searchLong = parseFloat(position.coords.longitude)
             newSearch = true
-            getAddressFromCoordinates(`${sourceLat},${sourceLong}`)
+            getAddressFromCoordinates(`${searchLat},${searchLong}`)
             getChargePoints()
         }, function(error) {
-            // Tell user that geolocation is not supported by this browser.";
+            // TO DO: Tell user that geolocation is not supported by this browser.";
         })
     }
 }
 
 // Constructs GET payload, specifying JSON content type, initiates GET passing the latitude & longitude request to OC API. The promise resolves to an array 
-// of e-charge stations within 25mi of the sourceLat,Long. Relevant data is then extracted from the response and stored in the global stationArray. Finally,
+// of e-charge stations within 25mi of the searchLat,Long. Relevant data is then extracted from the response and stored in the global stationArray. Finally,
 // renderResults is called
 function getChargePoints() {
     const getObj = {
@@ -143,7 +143,7 @@ function getChargePoints() {
             'Content-Type': 'application/json'
         }
     }
-    fetch(`https://api.openchargemap.io/v3/poi?latitude=${sourceLat}&longitude=${sourceLong}&distance=25&key=${ocaccesskey}`, getObj)
+    fetch(`https://api.openchargemap.io/v3/poi?latitude=${searchLat}&longitude=${searchLong}&distance=25&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
         if (firstSearchCompleted === true) {
@@ -181,7 +181,7 @@ function removeResults(station) {
 }  
 
 // Makes the results container visible, for each station in the stationArray checks if...
-// 1. Its distance from sourceLat,Long is within search radius.
+// 1. Its distance from searchLat,Long is within search radius.
 // 2. It has a connection type which matches the user selection.
 // If so, renders the relevant station data 
 function renderResults() {
