@@ -2,7 +2,7 @@
 /* GLOBAL VARIABLES INITIALIZATION */
 ////
 
-// Access keys for PositionStack (PS) & OpenChargeMap (OC) APIs
+// Access keys for PositionStack (https://positionstack.com/documentation) & OpenChargeMap (https://openchargemap.org/site) APIs
 const psaccesskey = '2924b2440dcf51f5ba91437412fead7d'
 const ocaccesskey = '9f2e41d5-3c41-43bc-9376-ad390fe352f4'
 
