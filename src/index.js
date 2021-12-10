@@ -212,38 +212,9 @@ function renderResults() {
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
-        if (addressInfo.Distance <= searchRadius && !(connectionsInfo.length === 0)) {
-            let chademo = false
-            if (connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes("Configuration AA")) && connectionType === "CHAdeMO") {
-                chademo = true
-            }
-            if (connectionType === "all" || ((connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType)) || chademo))) {
-                const resultBlock = document.createElement("div")
-                resultBlock.className = "resultBlock"
-                const resultDiv = document.createElement("div")
-                resultDiv.className = "resultDiv"
-                const row1Div = document.createElement('div')
-                row1Div.className = "row1Div"
-                row1Div.appendChild(renderResultTitleAddress(addressInfo))
-                row1Div.appendChild(renderDirectionsButton(addressInfo))
-                resultDiv.appendChild(row1Div)
-                const connectionsTitle = document.createElement('h5')
-                connectionsTitle.innerText = "Connections:"
-                connectionsTitle.className = "connectionsTitle"
-                resultDiv.appendChild(connectionsTitle)
-                resultDiv.appendChild(renderConnections(station))
-                resultBlock.appendChild(resultDiv)
-                resultDisplay.appendChild(resultBlock)
-                station.resultElement = resultBlock
-            }
-        }
+        renderStationResult(station, addressInfo, connectionsInfo, resultDisplay)
     })
-    if (!stationArray.find(station => station.resultElement)) {
-        const noResults = document.createElement('h3')
-        noResults.className = "noResults"
-        noResults.innerText = "No charging stations found..."
-        resultDisplay.appendChild(noResults)
-    }
+    renderNoResults(resultDisplay)
     firstSearchCompleted = true
     newSearch = false
 }
@@ -272,6 +243,32 @@ function renderAddressP() {
     addressP.innerText = addressString
     addressP.id = "addressP"
     document.querySelector('#addressContainer').appendChild(addressP)
+}
+
+//
+function renderStationResult(station, addressInfo, connectionsInfo, resultDisplay) {
+    if (addressInfo.Distance <= searchRadius && !(connectionsInfo.length === 0)) {
+        let chademo = false
+        if (connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes("Configuration AA")) && connectionType === "CHAdeMO") {
+            chademo = true
+        }
+        if (connectionType === "all" || ((connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType)) || chademo))) {
+            const resultBlock = document.createElement("div")
+            resultBlock.className = "resultBlock"
+            const resultDiv = document.createElement("div")
+            resultDiv.className = "resultDiv"
+            const row1Div = document.createElement('div')
+            row1Div.className = "row1Div"
+            row1Div.appendChild(renderResultTitleAddress(addressInfo))
+            row1Div.appendChild(renderDirectionsButton(addressInfo))
+            resultDiv.appendChild(row1Div)
+            resultDiv.appendChild(renderConnectionsTitle())
+            resultDiv.appendChild(renderConnections(station))
+            resultBlock.appendChild(resultDiv)
+            resultDisplay.appendChild(resultBlock)
+            station.resultElement = resultBlock
+        }
+    }
 }
 
 // Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
@@ -309,6 +306,14 @@ function renderDirectionsButton(addressInfo) {
     return directionsButtonDiv
 }
 
+//
+function renderConnectionsTitle() {
+    const connectionsTitle = document.createElement('h5')
+    connectionsTitle.innerText = "Connections:"
+    connectionsTitle.className = "connectionsTitle"
+    return connectionsTitle
+}
+
 // Creates a div containing the station's connection information. Returns the div to renderResults to be rendered to the DOM
 function renderConnections(station) {
     const connectionsInfoContainer = document.createElement('div')
@@ -316,13 +321,26 @@ function renderConnections(station) {
     station.connections.forEach(connection => {
         const connectionDiv = document.createElement('div')
         connectionDiv.className = "connectionDiv"
-        if (connection.ConnectionType.FormalName && (!connection.ConnectionType.FormalName.includes("Small Paddle") && !connection.ConnectionType.FormalName.includes("Not Specified"))) {
-            const ctimg = document.createElement('img')
-            ctimg.className = "ctimg"
-            ctimg.src = getImage(connection.ConnectionType.FormalName)
-            connectionDiv.appendChild(ctimg)
-        }
-        const ul = document.createElement('ul')
+        renderConnectionImage(connection, connectionDiv)
+        renderConnectionDetails(connection, connectionDiv)
+        connectionsInfoContainer.appendChild(connectionDiv)
+    })
+    return connectionsInfoContainer
+}
+
+//
+function renderConnectionImage(connection, connectionDiv) {
+    if (connection.ConnectionType.FormalName && (!connection.ConnectionType.FormalName.includes("Small Paddle") && !connection.ConnectionType.FormalName.includes("Not Specified"))) {
+        const ctimg = document.createElement('img')
+        ctimg.className = "ctimg"
+        ctimg.src = getImage(connection.ConnectionType.FormalName)
+        connectionDiv.appendChild(ctimg)
+    }
+}
+
+//
+function renderConnectionDetails(connection, connectionDiv) {
+    const ul = document.createElement('ul')
         ul.className = "connectionList"
         const connectionType = document.createElement('li')
         connectionType.innerText = `${((connection.ConnectionType.FormalName && !connection.ConnectionType.FormalName.includes("Not Specified")) ? connection.ConnectionType.FormalName : "Unknown Type")}`
@@ -340,9 +358,6 @@ function renderConnections(station) {
             ul.appendChild(ampsVolts)
         } 
         connectionDiv.appendChild(ul)
-        connectionsInfoContainer.appendChild(connectionDiv)
-    })
-    return connectionsInfoContainer
 }
 
 // takes in the connector type string and outputs the appropraite connector image path
@@ -355,5 +370,15 @@ function getImage(imageString) {
         return "./assets/tesla.png"
     } else if (imageString.includes("CHAdeMO") || (imageString.includes("Configuration AA"))) {
         return "./assets/CHAdeMO.png"
+    }
+}
+
+//
+function renderNoResults(resultDisplay) {
+    if (!stationArray.find(station => station.resultElement)) {
+        const noResults = document.createElement('h3')
+        noResults.className = "noResults"
+        noResults.innerText = "No charging stations found..."
+        resultDisplay.appendChild(noResults)
     }
 }
