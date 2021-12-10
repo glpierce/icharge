@@ -267,7 +267,13 @@ function renderConnections(station) {
     connectionsInfoContainer.appendChild(connectionsTitle)
     station.connections.forEach(connection => {
         const connectionSpan = document.createElement('span')
-        connection.className = "connectionSpan"
+        connectionSpan.className = "connectionSpan"
+        if (connection.ConnectionType.FormalName) {
+            const ctimg = document.createElement('img')
+            ctimg.className = "ctimg"
+            ctimg.src = getImage(connection.ConnectionType.FormalName)
+            connectionSpan.appendChild(ctimg)
+        }
         const ul = document.createElement('ul')
         ul.className = "connectionList"
         const connectionType = document.createElement('li')
@@ -289,4 +295,14 @@ function renderConnections(station) {
         connectionsInfoContainer.appendChild(connectionSpan)
     })
     return connectionsInfoContainer
+}
+
+function getImage(imageString) {
+    if (imageString.includes("J1772")) {
+        return "./assets/Type1_J1772.png"
+    } else if (imageString.includes("62196")) {
+        return "./assets/62196.png"
+    } else if (imageString.includes("Tesla")) {
+        return "./assets/Tesla.png"
+    }
 }
