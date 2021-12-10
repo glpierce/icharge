@@ -74,9 +74,9 @@ function changeConnectionType(event) {
 // Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
-    event.target.reset()
     newSearch = true
     addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
+    event.target.reset()
     getCoordinatesFromAddress(addressString)
 }
 
