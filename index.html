@@ -5,75 +5,79 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
   </head>
   <body>
-<div id= "main">
-  <div id ="secDiv">
+<div id="main">
+  <div id="secDiv">
     <div id="titleDiv">
       <img id="logo" src="./assets/logo1.png" alt="logo">
-      <h4 id="subTitle">Find EV charging stations near you.</h4>
+      <h3 id="subTitle">Find EV charging stations near you.</h3>
     </div>
     <div id="outerFormDiv">
       <div id="formContainer">
-        <h4 class="searchTitle">Search by current location:</h4>
-        <div id="currentLocationDiv">
-          <button class="btn btn-lg btn-default button" id="currentLocationButton">Current Location</button>
-        </div>
         <h4 class="searchTitle">Search by address:</h4>
         <form id="form">
           <div>
             <label for="street">Street Address</label>
-            <input type="text" id="street" class = "addressInput">
+            <input type="text" id="street" size="28" class="addressInput">
           </div>
           <div>
               <label for="city">City</label>
-              <input type="text" id="city" class = "addressInput">
+              <input type="text" id="city" class="addressInput">
           </div>
           <div>
             <label for="state">State/Province</label>
-            <input type="text" id="state" class = "addressInput">
+            <input type="text" id="state" size="15" class="addressInput">
           </div>
           <div>
             <label for="zip">Zip Code</label>
-            <input type="text" id="zip" size="10" class = "addressInput">
+            <input type="text" id="zip" size="10" class="addressInput">
           </div>
           <div>
             <label for="country">Country</label>
-            <input type="text" id="country" size="10" class = "addressInput">
+            <input type="text" id="country" size="10" class="addressInput">
           </div>
           <div>
             <input type="submit" class="btn btn-lg btn-default button" id="submitButton" value="Search">
           </div>
         </form>
+        <h4 class="searchTitle">Search by current location:</h4>
+        <div id="currentLocationDiv">
+          <button class="btn btn-lg btn-default button" id="currentLocationButton">Current Location</button>
+        </div>
       </div>
     </div>
-    <div id= "outerResultsDiv">
-      <div id= "resultsContainer">
-        <div id="resultsHeader">
-          <span id="addressContainer">
-          <h4 id="searchResultsLabel">Search results for:</h4>
-          </span>
-          <span>
-            <span id="searchRadiusContainer">
-              <label for="searchRadius" class = "selectorText" >Search Radius:</label>
-              <select name="searchRadius" id="searchRadius">
-                <option value="1">1mi</option>
-                <option value="5">5mi</option>
-                <option value="10">10mi</option>
-                <option value="25">25mi</option>
-              </select>
+    <div id="outerResultsDiv">
+      <div id="loaderAndResults">
+        <div class="loader"></div>
+        <div id="resultsContainer">
+          <div id="resultsHeader">
+            <span id="addressContainer">
+            <h4 id="searchResultsLabel">Search results for:</h4>
             </span>
-            <span id="connectionTypeContainer">
-              <label for="connectionType" class = "selectorText" >Connection Type:</label>
-              <select name="connectionType" id="connectionType">
-                <option value="all">All</option>
-                <option value="J1772">J1772</option>
-                <option value="Configuration EE">IEC Configuration EE</option>
-                <option value="Tesla Supercharger">Tesla Supercharger</option>
-                <option value="CHAdeMO">CHAdeMO/IEC Configuration AA</option>
-              </select>
+            <span>
+              <span id="searchRadiusContainer">
+                <label for="searchRadius" class="selectorText">Search Radius:</label>
+                <select name="searchRadius" id="searchRadius">
+                  <option value="1">1mi</option>
+                  <option value="5" selected>5mi</option>
+                  <option value="10">10mi</option>
+                  <option value="25">25mi</option>
+                  <option value="50">50mi</option>
+                </select>
+              </span>
+              <span id="connectionTypeContainer">
+                <label for="connectionType" class="selectorText">Connection Type:</label>
+                <select name="connectionType" id="connectionType">
+                  <option value="all">All</option>
+                  <option value="J1772">SAE J1772</option>
+                  <option value="CHAdeMO">CHAdeMO/IEC Config. AA</option>
+                  <option value="Configuration EE">IEC Config. EE</option>
+                  <option value="Tesla Supercharger">Tesla Supercharger</option>
+                </select>
+              </span>
             </span>
-          </span>
-        </div>
-        <div id = "resultDisplay">
+          </div>
+          <div id="resultDisplay">
+          </div>
         </div>
       </div>
     </div>

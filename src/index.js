@@ -25,7 +25,7 @@ let addressString
 let stationArray = []
 
 // GLobal variables for storing selected search radius in miles, connection type
-let searchRadius = 1
+let searchRadius = 5
 let connectionType = "all"
 
 
@@ -77,6 +77,11 @@ function changeConnectionType(event) {
 // Called when submit button is clicked. Prevents default page reload, converts inputs into an address string, passes the string to getCoordinates
 function submitForm(event) {
     event.preventDefault()
+    if (firstSearchCompleted) {
+        stationArray.forEach(station => removeResults(station))
+        document.getElementById("resultsContainer").style.visibility = "hidden";
+    }
+    document.querySelector(".loader").style.display = "block";
     newSearch = true
     addressString = `${event.target[0].value}, ${event.target[1].value}, ${event.target[2].value} ${event.target[3].value} ${event.target[4].value}`
     event.target.reset()
@@ -93,7 +98,7 @@ function getAddressFromCoordinates(coordinateString) {
     fetch(`http://api.positionstack.com/v1/reverse?access_key=${psaccesskey}&query=${coordinateString}&limit=1`)
     .then(resp => resp.json())
     .then(coordData => {
-        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? coordData.data[0].postal_code.toString().slice(0, 6) : "")} ${coordData.data[0].country_code}`
+        addressString = `${coordData.data[0].name}, ${coordData.data[0].locality}, ${coordData.data[0].region_code} ${(coordData.data[0].postal_code ? coordData.data[0].postal_code.toString().slice(0, 5) : "")} ${coordData.data[0].country_code}`
     })
 }
 
@@ -119,18 +124,20 @@ function getCoordinatesFromBrowser(addressInfo) {
             directionsLong = parseFloat(position.coords.longitude)
             window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
         }, function(error) {
-            directionsLat = searchLat
-            directionsLong = searchLong
-            window.open(`https://www.google.com/maps/dir/?api=1&origin=${directionsLat},${directionsLong}&destination=${addressInfo.Latitude},${addressInfo.Longitude}`, '_blank')
+            alert(`${error.message}. Have fun walking...`)
         })
     } else {
         navigator.geolocation.getCurrentPosition(function(position) {
+            if (firstSearchCompleted) {
+                stationArray.forEach(station => removeResults(station))
+                document.getElementById("resultsContainer").style.visibility = "hidden";
+            }
+            document.querySelector(".loader").style.display = "block";
             searchLat = parseFloat(position.coords.latitude)
             searchLong = parseFloat(position.coords.longitude)
             getAddressFromCoordinates(`${searchLat},${searchLong}`)
             getChargePoints()
         }, function(error) {
-            console.log(error)
             alert(`${error.message}. Have fun walking...`)
         })
     }
@@ -146,10 +153,10 @@ function getChargePoints() {
             'Content-Type': 'application/json'
         }
     }
-    fetch(`https://api.openchargemap.io/v3/poi?latitude=${searchLat}&longitude=${searchLong}&distance=25&key=${ocaccesskey}`, getObj)
+    fetch(`https://api.openchargemap.io/v3/poi?latitude=${searchLat}&longitude=${searchLong}&distance=50&key=${ocaccesskey}`, getObj)
     .then(resp => resp.json())
     .then(data => {
-        if (firstSearchCompleted === true) {
+        if (firstSearchCompleted) {
             stationArray.forEach(station => removeResults(station))
             stationArray = []
         }
@@ -189,15 +196,16 @@ function removeResults(station) {
 // If so, renders the relevant station data 
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
-    if (firstSearchCompleted === true) {
+    if (firstSearchCompleted) {
         document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
     }
-    if (newSearch === true) {
-        document.getElementById('searchRadius').selectedIndex = 0
+    if (newSearch) {
+        document.getElementById('searchRadius').selectedIndex = 1
         document.getElementById('connectionType').selectedIndex = 0
-        searchRadius = 1
+        searchRadius = 5
         connectionType = "all"
     }
+    document.querySelector(".loader").style.display = "none";
     resultsContainer.style.visibility = "visible"
     const addressP = document.createElement('p')
     addressP.innerText = addressString
@@ -207,7 +215,7 @@ function renderResults() {
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
-        if (addressInfo.Distance <= searchRadius) {
+        if (addressInfo.Distance <= searchRadius && !(connectionsInfo.length === 0)) {
             let chademo = false
             if (connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes("Configuration AA")) && connectionType === "CHAdeMO") {
                 chademo = true
@@ -222,6 +230,10 @@ function renderResults() {
                 row1Div.appendChild(renderTitleAddress(addressInfo))
                 row1Div.appendChild(renderDirectionsButton(addressInfo))
                 resultDiv.appendChild(row1Div)
+                const connectionsTitle = document.createElement('h5')
+                connectionsTitle.innerText = "Connections:"
+                connectionsTitle.className = "connectionsTitle"
+                resultDiv.appendChild(connectionsTitle)
                 resultDiv.appendChild(renderConnections(station))
                 resultBlock.appendChild(resultDiv)
                 resultDisplay.appendChild(resultBlock)
@@ -272,23 +284,19 @@ function renderDirectionsButton(addressInfo) {
 function renderConnections(station) {
     const connectionsInfoContainer = document.createElement('div')
     connectionsInfoContainer.className = "connectionsInfoContainer"
-    const connectionsTitle = document.createElement('h5')
-    connectionsTitle.innerText = "Connections:"
-    connectionsTitle.className = "connectionsTitle"
-    connectionsInfoContainer.appendChild(connectionsTitle)
     station.connections.forEach(connection => {
-        const connectionSpan = document.createElement('span')
-        connectionSpan.className = "connectionSpan"
-        if (connection.ConnectionType.FormalName) {
+        const connectionDiv = document.createElement('div')
+        connectionDiv.className = "connectionDiv"
+        if (connection.ConnectionType.FormalName && (!connection.ConnectionType.FormalName.includes("Small Paddle") && !connection.ConnectionType.FormalName.includes("Not Specified"))) {
             const ctimg = document.createElement('img')
             ctimg.className = "ctimg"
             ctimg.src = getImage(connection.ConnectionType.FormalName)
-            connectionSpan.appendChild(ctimg)
+            connectionDiv.appendChild(ctimg)
         }
         const ul = document.createElement('ul')
         ul.className = "connectionList"
         const connectionType = document.createElement('li')
-        connectionType.innerText = `${(connection.ConnectionType.FormalName ? connection.ConnectionType.FormalName : "Unknown Type")}`
+        connectionType.innerText = `${((connection.ConnectionType.FormalName && !connection.ConnectionType.FormalName.includes("Not Specified")) ? connection.ConnectionType.FormalName : "Unknown Type")}`
         connectionType.style.fontWeight = "bold"
         ul.appendChild(connectionType)
         const chargeRate = document.createElement('li')
@@ -302,8 +310,8 @@ function renderConnections(station) {
             ampsVolts.innerText = `${connection.Amps}A ${connection.Voltage}V`
             ul.appendChild(ampsVolts)
         } 
-        connectionSpan.appendChild(ul)
-        connectionsInfoContainer.appendChild(connectionSpan)
+        connectionDiv.appendChild(ul)
+        connectionsInfoContainer.appendChild(connectionDiv)
     })
     return connectionsInfoContainer
 }
