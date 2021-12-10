@@ -208,7 +208,11 @@ function renderResults() {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
         if (addressInfo.Distance <= searchRadius) {
-            if (connectionType === "all" || connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType))) {
+            let chademo = false
+            if (connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes("Configuration AA")) && connectionType === "CHAdeMO") {
+                chademo = true
+            }
+            if (connectionType === "all" || ((connectionsInfo.find(connection => connection.ConnectionType.FormalName && connection.ConnectionType.FormalName.includes(connectionType)) || chademo))) {
                 const resultBlock = document.createElement("div")
                 resultBlock.className = "resultBlock"
                 const resultDiv = document.createElement("div")
@@ -248,6 +252,7 @@ function renderTitleAddress(addressInfo) {
     return resultTitleDiv
 }
 
+// creates the Get Directions button and add the event listener
 function renderDirectionsButton(addressInfo) {
     const directionsButtonDiv = document.createElement('div')
     directionsButtonDiv.className = "directionsButtonDiv"
@@ -303,12 +308,15 @@ function renderConnections(station) {
     return connectionsInfoContainer
 }
 
+// takes in the connector type string and outputs the appropraite connector image path
 function getImage(imageString) {
     if (imageString.includes("J1772")) {
         return "./assets/Type1_J1772.png"
-    } else if (imageString.includes("62196")) {
-        return "./assets/62196.png"
+    } else if (imageString.includes("Configuration EE")) {
+        return "./assets/CCS1.png"
     } else if (imageString.includes("Tesla")) {
         return "./assets/tesla.png"
+    } else if (imageString.includes("CHAdeMO") || (imageString.includes("Configuration AA"))) {
+        return "./assets/CHAdeMO.png"
     }
 }
