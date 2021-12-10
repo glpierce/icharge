@@ -1,7 +1,6 @@
 #resultDisplay{
     overflow : scroll;
-    height: 600px;
-   
+    height: calc(100vh - 473.5px);  
 }
 
 
@@ -13,6 +12,7 @@
 #titleDiv {
     text-align: center;
     font-weight: bold;
+    color:white
 }
 
 #mainTitle, #subTitle {
@@ -187,8 +187,20 @@
 .addressInput{
     border-radius: 5px;
 }
+#logo{
+   width: 600px;
+   margin-top: 10px;
+  
+}
 
-body {
-    background-color: #083C5A !important;
-    
+#secDiv{
+   background-color: #083C5A !important;
+   width:1300px;
+   
+
+}
+
+#main{
+    display:flex;
+    justify-content: space-around;
 }
