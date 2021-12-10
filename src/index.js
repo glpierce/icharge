@@ -207,24 +207,8 @@ function removeResults(station) {
 function renderResults() {
     const resultsContainer = document.getElementById("resultsContainer")
     const resultDisplay = document.querySelector("#resultDisplay")
-    if (firstSearchCompleted) {
-        document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
-    }
-    if (document.querySelector(".noResults")) {
-        resultDisplay.removeChild(document.querySelector(".noResults"))
-    }
-    if (newSearch) {
-        document.getElementById('searchRadius').selectedIndex = 1
-        document.getElementById('connectionType').selectedIndex = 0
-        searchRadius = 5
-        connectionType = "all"
-    }
-    document.querySelector(".loader").style.display = "none";
-    resultsContainer.style.visibility = "visible"
-    const addressP = document.createElement('p')
-    addressP.innerText = addressString
-    addressP.id = "addressP"
-    document.querySelector('#addressContainer').appendChild(addressP)
+    initializeRender(resultsContainer, resultDisplay)
+    renderAddressP()
     stationArray.forEach(station => {
         const addressInfo = station.addressInfo
         const connectionsInfo = station.connections
@@ -240,7 +224,7 @@ function renderResults() {
                 resultDiv.className = "resultDiv"
                 const row1Div = document.createElement('div')
                 row1Div.className = "row1Div"
-                row1Div.appendChild(renderTitleAddress(addressInfo))
+                row1Div.appendChild(renderResultTitleAddress(addressInfo))
                 row1Div.appendChild(renderDirectionsButton(addressInfo))
                 resultDiv.appendChild(row1Div)
                 const connectionsTitle = document.createElement('h5')
@@ -264,8 +248,34 @@ function renderResults() {
     newSearch = false
 }
 
+//
+function initializeRender(resultsContainer, resultDisplay) {
+    if (firstSearchCompleted) {
+        document.querySelector('#addressContainer').removeChild(document.querySelector('#addressContainer p'))
+    }
+    if (document.querySelector(".noResults")) {
+        resultDisplay.removeChild(document.querySelector(".noResults"))
+    }
+    if (newSearch) {
+        document.getElementById('searchRadius').selectedIndex = 1
+        document.getElementById('connectionType').selectedIndex = 0
+        searchRadius = 5
+        connectionType = "all"
+    }
+    document.querySelector(".loader").style.display = "none";
+    resultsContainer.style.visibility = "visible"
+}
+
+//
+function renderAddressP() {
+    const addressP = document.createElement('p')
+    addressP.innerText = addressString
+    addressP.id = "addressP"
+    document.querySelector('#addressContainer').appendChild(addressP)
+}
+
 // Creates a div containing the station's title, address, and distance from user. Returns the div to renderResults to be rendered to the DOM
-function renderTitleAddress(addressInfo) {
+function renderResultTitleAddress(addressInfo) {
     const resultTitleDiv = document.createElement('div')
     resultTitleDiv.className = "resultTitleDiv"
     const stationTitle = document.createElement("h3")
